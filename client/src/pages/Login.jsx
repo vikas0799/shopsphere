@@ -29,6 +29,9 @@ export default function Login() {
         onChange={(e) => setForm({ ...form, password: e.target.value })} />
       {error && <p className="error">{error}</p>}
       <button className="btn full">Login</button>
+      <p className="muted">
+        <Link to="/forgot-password">Forgot password?</Link>
+      </p>
       <p className="muted">New here? <Link to="/register">Create an account</Link></p>
     </form>
   );
