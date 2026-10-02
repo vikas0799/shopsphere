@@ -11,6 +11,24 @@
   --radius: 10px;
 }
 
+[data-theme="dark"] {
+  --bg: #0f0f17;
+  --surface: #1a1a2e;
+  --text: #e8e8f0;
+  --muted: #9898b0;
+  --primary: #7c5ce4;
+  --primary-dark: #9b7ff0;
+  --danger: #f0526a;
+  --success: #34d87a;
+  --border: #2e2e46;
+}
+
+.theme-toggle {
+  font-size: 1.1rem;
+  padding: 6px 10px;
+  line-height: 1;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
