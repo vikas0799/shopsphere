@@ -3,24 +3,37 @@ import api, { getErrorMessage } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import Loader from '../components/Loader.jsx';
 import { CATEGORIES } from '../utils/format.js';
+import useDebounce from '../hooks/useDebounce.js';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filters, setFilters] = useState({ search: '', category: '', sort: 'newest' });
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('');
+  const [sort, setSort] = useState('newest');
+
+  const debouncedSearch = useDebounce(search, 400);
 
   useEffect(() => {
-    // NOTE: this fires a request on every keystroke - see "Debounce search" issue.
+    let active = true;
     setLoading(true);
     api
-      .get('/products', { params: filters })
-      .then(({ data }) => setProducts(data))
-      .catch((err) => setError(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  }, [filters]);
+      .get('/products', { params: { search: debouncedSearch, category, sort } })
+      .then(({ data }) => {
+        if (active) setProducts(data);
+      })
+      .catch((err) => {
+        if (active) setError(getErrorMessage(err));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-  const update = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.value }));
+    return () => {
+      active = false;
+    };
+  }, [debouncedSearch, category, sort]);
 
   return (
     <section>
@@ -30,14 +43,14 @@ export default function Home() {
       </div>
 
       <div className="filters">
-        <input placeholder="Search products..." value={filters.search} onChange={update('search')} />
-        <select value={filters.category} onChange={update('category')}>
+        <input placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">All categories</option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
-        <select value={filters.sort} onChange={update('sort')}>
+        <select value={sort} onChange={(e) => setSort(e.target.value)}>
           <option value="newest">Newest</option>
           <option value="price_asc">Price: low to high</option>
           <option value="price_desc">Price: high to low</option>
