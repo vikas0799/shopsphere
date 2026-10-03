@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api, { getErrorMessage } from '../../api/client.js';
 import { CATEGORIES, formatINR } from '../../utils/format.js';
+import ConfirmModal from '../../components/ConfirmModal.jsx';
 
 const empty = { name: '', description: '', price: '', category: 'electronics', brand: '', image: '', stock: '' };
 
@@ -10,6 +11,7 @@ export default function AdminProducts() {
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
+  const [deletingProduct, setDeletingProduct] = useState(null);
 
   const load = () => api.get('/products').then(({ data }) => setProducts(data));
   useEffect(() => {
@@ -40,10 +42,20 @@ export default function AdminProducts() {
     setForm({ ...empty, ...p, price: String(p.price), stock: String(p.stock) });
   };
 
-  // TODO: add a confirmation dialog before deleting.
-  const remove = async (id) => {
-    await api.delete(`/products/${id}`);
-    load();
+  const confirmDelete = async () => {
+    if (!deletingProduct) return;
+    try {
+      await api.delete(`/products/${deletingProduct._id}`);
+      setDeletingProduct(null);
+      load();
+    } catch (err) {
+      setError(getErrorMessage(err));
+      setDeletingProduct(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeletingProduct(null);
   };
 
   return (
@@ -92,12 +104,24 @@ export default function AdminProducts() {
               <td>{p.stock}</td>
               <td className="row">
                 <button className="btn btn-ghost" onClick={() => edit(p)}>Edit</button>
-                <button className="btn btn-danger" onClick={() => remove(p._id)}>Delete</button>
+                <button className="btn btn-danger" onClick={() => setDeletingProduct(p)}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <ConfirmModal
+        isOpen={Boolean(deletingProduct)}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${deletingProduct?.name}"? This action cannot be undone.`}
+        confirmText="Confirm"
+        cancelText="Cancel"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </section>
   );
 }
+
