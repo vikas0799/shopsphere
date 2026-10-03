@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api, { getErrorMessage } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import Loader from '../components/Loader.jsx';
+import useDebounce from '../hooks/useDebounce.js';
 import { CATEGORIES } from '../utils/format.js';
 
 export default function Home() {
@@ -10,15 +11,19 @@ export default function Home() {
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ search: '', category: '', sort: 'newest' });
 
+  const search = useDebounce(filters.search, 400);
+
   useEffect(() => {
-    // NOTE: this fires a request on every keystroke - see "Debounce search" issue.
+    const controller = new AbortController();
+    setError('');
     setLoading(true);
     api
-      .get('/products', { params: filters })
-      .then(({ data }) => setProducts(data))
-      .catch((err) => setError(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  }, [filters]);
+      .get('/products', { params: { search, category: filters.category, sort: filters.sort }, signal: controller.signal })
+      .then(({ data }) => { if (!controller.signal.aborted) setProducts(data); })
+      .catch((err) => { if (!controller.signal.aborted) setError(getErrorMessage(err)); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [search, filters.category, filters.sort]);
 
   const update = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.value }));
 
