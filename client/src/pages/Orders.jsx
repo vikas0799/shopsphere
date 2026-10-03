@@ -8,21 +8,40 @@ export default function Orders() {
   const location = useLocation();
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState('');
 
-  useEffect(() => {
+  const loadOrders = () => {
     api
       .get('/orders/mine')
       .then(({ data }) => setOrders(data))
       .catch((err) => setError(getErrorMessage(err)));
+  };
+
+  useEffect(() => {
+    loadOrders();
   }, []);
 
-  if (error) return <p className="error">{error}</p>;
+  const handleCancel = async (orderId) => {
+    setError('');
+    setFeedback('');
+    try {
+      await api.patch(`/orders/${orderId}/cancel`);
+      setFeedback('Order cancelled successfully.');
+      loadOrders();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  };
+
+  if (error && !orders) return <p className="error">{error}</p>;
   if (!orders) return <Loader />;
 
   return (
     <section>
       <h1>My Orders</h1>
       {location.state?.placed && <p className="success">Order placed successfully!</p>}
+      {feedback && <p className="success">{feedback}</p>}
+      {error && <p className="error">{error}</p>}
       {orders.length === 0 && <p className="muted">You have not placed any orders yet.</p>}
       {orders.map((o) => (
         <div key={o._id} className="card order">
@@ -39,7 +58,17 @@ export default function Orders() {
             <span className="muted">{new Date(o.createdAt).toLocaleDateString('en-IN')}</span>
             <strong>{formatINR(o.totalAmount)}</strong>
           </div>
-          {/* TODO: allow customer to cancel a pending order */}
+          {(o.status === 'pending' || o.status === 'confirmed') && (
+            <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={() => handleCancel(o._id)}
+              >
+                Cancel order
+              </button>
+            </div>
+          )}
         </div>
       ))}
     </section>
