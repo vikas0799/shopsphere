@@ -11,34 +11,45 @@ export const createOrder = asyncHandler(async (req, res) => {
     throw new Error('Order must contain at least one item');
   }
 
-  // Check that every product exists and has enough stock
-  for (const item of items) {
-    const product = await Product.findById(item.product);
-    if (!product) {
-      res.status(404);
-      throw new Error(`Product not found: ${item.product}`);
+  const reservedItems = [];
+  try {
+    for (const item of items) {
+      const product = await Product.findById(item.product);
+      if (!product) {
+        res.status(404);
+        throw new Error(`Product not found: ${item.product}`);
+      }
+      const result = await Product.updateOne(
+        { _id: item.product, stock: { $gte: item.quantity } },
+        { $inc: { stock: -item.quantity } }
+      );
+      if (result.modifiedCount === 0) {
+        res.status(400);
+        throw new Error(`Not enough stock for ${product.name}`);
+      }
+      reservedItems.push(item);
     }
-    if (product.stock < item.quantity) {
-      res.status(400);
-      throw new Error(`Not enough stock for ${product.name}`);
+
+    // TODO: total is currently calculated from prices sent by the client.
+    // This should use prices from the database instead (see issue tracker).
+    const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+    const order = await Order.create({
+      user: req.user._id,
+      items,
+      shippingAddress,
+      paymentMethod,
+      totalAmount,
+    });
+
+    res.status(201).json(order);
+  } catch (error) {
+    // Restore stock if something failed
+    for (const reserved of reservedItems) {
+      await Product.updateOne({ _id: reserved.product }, { $inc: { stock: reserved.quantity } });
     }
+    throw error;
   }
-
-  // TODO: total is currently calculated from prices sent by the client.
-  // This should use prices from the database instead (see issue tracker).
-  const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-
-  // TODO: stock is not reduced after an order is placed.
-
-  const order = await Order.create({
-    user: req.user._id,
-    items,
-    shippingAddress,
-    paymentMethod,
-    totalAmount,
-  });
-
-  res.status(201).json(order);
 });
 
 // GET /api/orders/mine
@@ -76,6 +87,12 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Order not found');
   }
+  if (req.body.status === 'cancelled' && order.status !== 'cancelled') {
+    for (const item of order.items) {
+      await Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } });
+    }
+  }
+
   order.status = req.body.status;
   await order.save();
   res.json(order);
