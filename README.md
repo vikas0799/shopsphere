@@ -70,6 +70,20 @@ npm run dev                 # app on http://localhost:5173
 | Admin    | admin@shopsphere.dev     | admin123    |
 | Customer | customer@shopsphere.dev  | customer123 |
 
+## 📸 Screenshots
+
+### Home
+![Home page](docs/screenshots/home.png)
+
+### Product
+![Product page](docs/screenshots/product.png)
+
+### Cart
+![Cart page](docs/screenshots/cart.png)
+
+### Admin
+![Admin products page](docs/screenshots/admin.png)
+
 ## 🔌 API reference
 
 | Method | Endpoint                  | Access   | Description              |
