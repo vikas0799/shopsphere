@@ -1,14 +1,33 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../api/client.js';
+import api, { getErrorMessage } from '../../api/client.js';
+import AdminStats from '../../components/AdminStats.jsx';
 import { formatINR } from '../../utils/format.js';
 
 const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState('');
 
-  const load = () => api.get('/orders').then(({ data }) => setOrders(data));
+  const loadStats = () => {
+    api
+      .get('/admin/stats')
+      .then(({ data }) => {
+        setStats(data);
+        setStatsError('');
+      })
+      .catch((err) => setStatsError(getErrorMessage(err)))
+      .finally(() => setStatsLoading(false));
+  };
+
+  const load = () => {
+    api.get('/orders').then(({ data }) => setOrders(data));
+    loadStats();
+  };
+
   useEffect(() => {
     load();
   }, []);
@@ -24,7 +43,7 @@ export default function AdminOrders() {
         <h1>Admin · Orders</h1>
         <Link to="/admin/products" className="btn btn-ghost">← Products</Link>
       </div>
-      {/* TODO: dashboard cards - total revenue, orders today, low-stock products */}
+      <AdminStats stats={stats} loading={statsLoading} error={statsError} />
       <table className="table">
         <thead>
           <tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr>
