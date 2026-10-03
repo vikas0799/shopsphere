@@ -1,7 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api, { getErrorMessage } from '../../api/client.js';
 import { CATEGORIES, formatINR } from '../../utils/format.js';
+
+function DeleteConfirmation({ product, onClose, onConfirm }) {
+  const dialog = useRef(null);
+  useEffect(() => {
+    dialog.current.showModal();
+  }, []);
+
+  return (
+    <dialog ref={dialog} className="card form" aria-labelledby="delete-title" onCancel={onClose}>
+      <h2 id="delete-title">Delete product?</h2>
+      <p>Delete "{product.name}"? This cannot be undone.</p>
+      <div className="row">
+        <button autoFocus className="btn btn-ghost" onClick={() => { dialog.current.close(); onClose(); }}>Cancel</button>
+        <button className="btn btn-danger" onClick={() => { dialog.current.close(); onConfirm(product); }}>Delete product</button>
+      </div>
+    </dialog>
+  );
+}
 
 const empty = { name: '', description: '', price: '', category: 'electronics', brand: '', image: '', stock: '' };
 
@@ -10,6 +28,7 @@ export default function AdminProducts() {
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
+  const [deletingProduct, setDeletingProduct] = useState(null);
 
   const load = () => api.get('/products').then(({ data }) => setProducts(data));
   useEffect(() => {
@@ -40,10 +59,15 @@ export default function AdminProducts() {
     setForm({ ...empty, ...p, price: String(p.price), stock: String(p.stock) });
   };
 
-  // TODO: add a confirmation dialog before deleting.
-  const remove = async (id) => {
-    await api.delete(`/products/${id}`);
-    load();
+  const remove = async (product) => {
+    setDeletingProduct(null);
+    setError('');
+    try {
+      await api.delete(`/products/${product._id}`);
+      await load();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   };
 
   return (
@@ -79,6 +103,10 @@ export default function AdminProducts() {
         </div>
       </form>
 
+      {deletingProduct && (
+        <DeleteConfirmation product={deletingProduct} onClose={() => setDeletingProduct(null)} onConfirm={remove} />
+      )}
+
       <table className="table">
         <thead>
           <tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th /></tr>
@@ -92,7 +120,7 @@ export default function AdminProducts() {
               <td>{p.stock}</td>
               <td className="row">
                 <button className="btn btn-ghost" onClick={() => edit(p)}>Edit</button>
-                <button className="btn btn-danger" onClick={() => remove(p._id)}>Delete</button>
+                <button className="btn btn-danger" onClick={() => setDeletingProduct(p)}>Delete</button>
               </td>
             </tr>
           ))}
