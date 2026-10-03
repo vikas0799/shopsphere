@@ -15,12 +15,15 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
+  const [pincodeTouched, setPincodeTouched] = useState(false);
+  const pincodeValid = /^[1-9][0-9]{5}$/.test(address.pincode || '');
 
   const update = (key) => (e) => setAddress((a) => ({ ...a, [key]: e.target.value }));
 
-  // TODO: no validation for pincode format (6 digits) - see issue tracker.
   const placeOrder = async (e) => {
     e.preventDefault();
+    setPincodeTouched(true);
+    if (!pincodeValid) return;
     setPlacing(true);
     setError('');
     try {
@@ -47,7 +50,13 @@ export default function Checkout() {
         <input required placeholder="Address line" value={address.line1} onChange={update('line1')} />
         <input required placeholder="City" value={address.city} onChange={update('city')} />
         <input required placeholder="State" value={address.state} onChange={update('state')} />
-        <input required placeholder="Pincode" value={address.pincode} onChange={update('pincode')} />
+        <label htmlFor="pincode">Pincode</label>
+        <input id="pincode" required placeholder="Pincode" inputMode="numeric" autoComplete="postal-code"
+          value={address.pincode} onChange={update('pincode')} onBlur={() => setPincodeTouched(true)}
+          aria-invalid={pincodeTouched && !pincodeValid} aria-describedby={pincodeTouched && !pincodeValid ? 'pincode-error' : undefined} />
+        {pincodeTouched && !pincodeValid && (
+          <p id="pincode-error" className="error" role="alert">Enter exactly 6 digits, starting with 1–9.</p>
+        )}
 
         <label>Payment method</label>
         <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
