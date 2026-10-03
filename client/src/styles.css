@@ -100,4 +100,22 @@ textarea { min-height: 80px; }
 .empty { text-align: center; padding: 60px 0; }
 .footer { text-align: center; color: var(--muted); padding: 24px; border-top: 1px solid var(--border); }
 
-/* TODO: the layout breaks on small screens (<600px) - see "Mobile responsive" issue */
+/* small screen fixes */
+@media (max-width: 768px) {
+  /* navbar items wrap instead of overlapping */
+  .navbar { flex-wrap: wrap; gap: 8px 16px; padding: 12px 16px; }
+  .nav-links { gap: 12px; }
+
+  /* admin table scrolls sideways */
+     .table { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
+@media (max-width: 600px) {
+  /* product detail in a single column */
+  .detail { grid-template-columns: 1fr; gap: 20px; }
+
+  /* cart item stacks vertically */
+      .cart-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .cart-item .grow { flex: none; }
+       .cart-item .row { flex-wrap: wrap; }
+}
