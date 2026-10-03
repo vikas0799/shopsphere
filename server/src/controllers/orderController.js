@@ -28,7 +28,18 @@ export const createOrder = asyncHandler(async (req, res) => {
   // This should use prices from the database instead (see issue tracker).
   const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  // TODO: stock is not reduced after an order is placed.
+  // Reduce stock; check and decrement in one query to avoid overselling.
+  for (const item of items) {
+    const result = await Product.updateOne(
+      { _id: item.product, stock: { $gte: item.quantity } },
+      { $inc: { stock: -item.quantity } }
+    );
+    // 0 modified means stock was not enough
+    if (result.modifiedCount === 0) {
+      res.status(400);
+      throw new Error('Not enough stock to complete this order');
+    }
+  }
 
   const order = await Order.create({
     user: req.user._id,
