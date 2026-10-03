@@ -10,11 +10,22 @@ export default function AdminProducts() {
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = () => api.get('/products').then(({ data }) => setProducts(data));
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    if (!pendingDelete) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && !deleting) setPendingDelete(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [pendingDelete, deleting]);
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
@@ -40,10 +51,19 @@ export default function AdminProducts() {
     setForm({ ...empty, ...p, price: String(p.price), stock: String(p.stock) });
   };
 
-  // TODO: add a confirmation dialog before deleting.
-  const remove = async (id) => {
-    await api.delete(`/products/${id}`);
-    load();
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    setError('');
+    try {
+      await api.delete(`/products/${pendingDelete._id}`);
+      await load();
+      setPendingDelete(null);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -92,12 +112,47 @@ export default function AdminProducts() {
               <td>{p.stock}</td>
               <td className="row">
                 <button className="btn btn-ghost" onClick={() => edit(p)}>Edit</button>
-                <button className="btn btn-danger" onClick={() => remove(p._id)}>Delete</button>
+                <button className="btn btn-danger" onClick={() => setPendingDelete(p)}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {pendingDelete && (
+        <div className="modal-backdrop" onClick={() => !deleting && setPendingDelete(null)}>
+          <div
+            className="delete-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="delete-title">Delete product?</h2>
+            <p>
+              Are you sure you want to delete <strong>"{pendingDelete.name}"</strong>? This action cannot be undone.
+            </p>
+            <div className="row delete-actions">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                disabled={deleting}
+                onClick={() => setPendingDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                disabled={deleting}
+                onClick={confirmDelete}
+              >
+                {deleting ? 'Deleting...' : 'Delete product'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
