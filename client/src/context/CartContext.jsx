@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import Toast from '../components/Toast.jsx';
 
 const CartContext = createContext(null);
 const STORAGE_KEY = 'shopsphere_cart';
@@ -6,6 +7,12 @@ const STORAGE_KEY = 'shopsphere_cart';
 // The cart lives only in localStorage for now.
 // See issue: "Persist cart on the server for logged-in users".
 export function CartProvider({ children }) {
+  const [toast, setToast] = useState(null);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 2000);
+    return () => clearTimeout(timer);
+  }, [toast]);
   const [items, setItems] = useState(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
@@ -16,6 +23,7 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addToCart = (product, quantity = 1) => {
+    setToast({ message: `${product.name} added to cart` });
     setItems((prev) => {
       const existing = prev.find((i) => i.product === product._id);
       if (existing) {
@@ -48,6 +56,7 @@ export function CartProvider({ children }) {
       value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice }}
     >
       {children}
+      {toast && <Toast message={toast.message} />}
     </CartContext.Provider>
   );
 }
