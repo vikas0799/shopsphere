@@ -5,6 +5,8 @@ import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatINR } from '../utils/format.js';
 
+const PINCODE_REGEX = /^[1-9][0-9]{5}$/;
+
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
@@ -14,19 +16,43 @@ export default function Checkout() {
   );
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [error, setError] = useState('');
+  const [pincodeError, setPincodeError] = useState('');
   const [placing, setPlacing] = useState(false);
 
-  const update = (key) => (e) => setAddress((a) => ({ ...a, [key]: e.target.value }));
+  const validatePincode = (code) => PINCODE_REGEX.test((code || '').trim());
 
-  // TODO: no validation for pincode format (6 digits) - see issue tracker.
+  const update = (key) => (e) => {
+    const value = e.target.value;
+    setAddress((a) => ({ ...a, [key]: value }));
+    if (key === 'pincode') {
+      if (pincodeError && validatePincode(value)) {
+        setPincodeError('');
+      }
+    }
+  };
+
+  const handlePincodeBlur = () => {
+    if (address.pincode && !validatePincode(address.pincode)) {
+      setPincodeError('Please enter a valid 6-digit Indian pincode');
+    }
+  };
+
   const placeOrder = async (e) => {
     e.preventDefault();
+    if (!validatePincode(address.pincode)) {
+      setPincodeError('Please enter a valid 6-digit Indian pincode');
+      return;
+    }
+    setPincodeError('');
     setPlacing(true);
     setError('');
     try {
       const { data } = await api.post('/orders', {
         items: items.map(({ product, name, price, quantity }) => ({ product, name, price, quantity })),
-        shippingAddress: address,
+        shippingAddress: {
+          ...address,
+          pincode: address.pincode.trim(),
+        },
         paymentMethod,
       });
       clearCart();
@@ -47,7 +73,14 @@ export default function Checkout() {
         <input required placeholder="Address line" value={address.line1} onChange={update('line1')} />
         <input required placeholder="City" value={address.city} onChange={update('city')} />
         <input required placeholder="State" value={address.state} onChange={update('state')} />
-        <input required placeholder="Pincode" value={address.pincode} onChange={update('pincode')} />
+        <input
+          required
+          placeholder="Pincode"
+          value={address.pincode}
+          onChange={update('pincode')}
+          onBlur={handlePincodeBlur}
+        />
+        {pincodeError && <p className="error">{pincodeError}</p>}
 
         <label>Payment method</label>
         <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
@@ -63,3 +96,4 @@ export default function Checkout() {
     </section>
   );
 }
+
