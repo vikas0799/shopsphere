@@ -4,7 +4,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 // GET /api/products?search=&category=&minPrice=&maxPrice=&sort=
 // NOTE: there is no pagination yet - see the "Add pagination" issue.
 export const getProducts = asyncHandler(async (req, res) => {
-  const { search, category, minPrice, maxPrice, sort } = req.query;
+  const { search, category, minPrice, maxPrice, sort, page = 1, limit = 12 } = req.query;
   const filter = {};
 
   if (search) filter.$text = { $search: search };
@@ -22,8 +22,19 @@ export const getProducts = asyncHandler(async (req, res) => {
     rating: { rating: -1 },
   };
 
-  const products = await Product.find(filter).sort(sortMap[sort] || { createdAt: -1 });
-  res.json(products);
+  const pageNumber = Number(page);
+  const limitNumber = Number(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const total = await Product.countDocuments(filter);
+  const totalPages = Math.ceil(total / limitNumber);
+
+  const products = await Product.find(filter)
+    .sort(sortMap[sort] || { createdAt: -1 })
+    .skip(skip)
+    .limit(limitNumber);
+
+  res.json({ products, page: pageNumber, totalPages, total });
 });
 
 // GET /api/products/:id
