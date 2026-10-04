@@ -7,8 +7,13 @@ const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
+  const [stats, setStats] = useState(null);
 
-  const load = () => api.get('/orders').then(({ data }) => setOrders(data));
+  // stats are loaded again after a status change
+  const load = () => {
+    api.get('/orders').then(({ data }) => setOrders(data));
+    api.get('/admin/stats').then(({ data }) => setStats(data));
+  };
   useEffect(() => {
     load();
   }, []);
@@ -24,7 +29,26 @@ export default function AdminOrders() {
         <h1>Admin · Orders</h1>
         <Link to="/admin/products" className="btn btn-ghost">← Products</Link>
       </div>
-      {/* TODO: dashboard cards - total revenue, orders today, low-stock products */}
+      {stats && (
+        <div className="stats">
+          <div className="card stat-card">
+            <span className="muted">Total revenue</span>
+            <strong>{formatINR(stats.revenue)}</strong>
+          </div>
+          <div className="card stat-card">
+            <span className="muted">Orders today</span>
+            <strong>{stats.ordersToday}</strong>
+          </div>
+          <div className="card stat-card">
+            <span className="muted">Pending orders</span>
+            <strong>{stats.pendingOrders}</strong>
+          </div>
+          <div className="card stat-card">
+            <span className="muted">Low stock products</span>
+            <strong>{stats.lowStock}</strong>
+          </div>
+        </div>
+      )}
       <table className="table">
         <thead>
           <tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr>
