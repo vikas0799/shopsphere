@@ -97,3 +97,11 @@ We ❤️ contributions! Read **[CONTRIBUTING.md](./CONTRIBUTING.md)** and pick 
 ## 📄 License
 
 [MIT](./LICENSE)
+
+## 📸 Screenshots
+
+### Home Page
+![ShopSphere home page](docs/screenshots/home.png)
+
+### Product Details
+![ShopSphere product details](docs/screenshots/product.png)
