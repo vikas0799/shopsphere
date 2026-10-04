@@ -8,6 +8,7 @@ export default function Orders() {
   const location = useLocation();
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState('');
+  const [cancelError, setCancelError] = useState('');
 
   useEffect(() => {
     api
@@ -16,6 +17,17 @@ export default function Orders() {
       .catch((err) => setError(getErrorMessage(err)));
   }, []);
 
+  const cancelOrder = async (id) => {
+    if (!window.confirm('Cancel this order?')) return;
+    setCancelError('');
+    try {
+      const { data } = await api.patch(`/orders/${id}/cancel`);
+      setOrders(orders.map((o) => (o._id === id ? data : o)));
+    } catch (err) {
+      setCancelError(getErrorMessage(err));
+    }
+  };
+
   if (error) return <p className="error">{error}</p>;
   if (!orders) return <Loader />;
 
@@ -23,6 +35,7 @@ export default function Orders() {
     <section>
       <h1>My Orders</h1>
       {location.state?.placed && <p className="success">Order placed successfully!</p>}
+      {cancelError && <p className="error">{cancelError}</p>}
       {orders.length === 0 && <p className="muted">You have not placed any orders yet.</p>}
       {orders.map((o) => (
         <div key={o._id} className="card order">
@@ -39,7 +52,9 @@ export default function Orders() {
             <span className="muted">{new Date(o.createdAt).toLocaleDateString('en-IN')}</span>
             <strong>{formatINR(o.totalAmount)}</strong>
           </div>
-          {/* TODO: allow customer to cancel a pending order */}
+          {(o.status === 'pending' || o.status === 'confirmed') && (
+            <button className="btn btn-danger" onClick={() => cancelOrder(o._id)}>Cancel order</button>
+          )}
         </div>
       ))}
     </section>

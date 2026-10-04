@@ -90,6 +90,7 @@ textarea { min-height: 80px; }
 .admin-form .row > * { flex: 1; }
 
 .order { padding: 16px; margin-bottom: 12px; }
+.order .btn-danger { margin-top: 12px; }
 .status { text-transform: capitalize; font-size: 0.85rem; padding: 2px 10px; border-radius: 999px; background: var(--bg); }
 .status-delivered { color: var(--success); }
 .status-cancelled { color: var(--danger); }
