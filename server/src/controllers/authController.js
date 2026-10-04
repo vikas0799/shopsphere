@@ -33,7 +33,9 @@ export const register = asyncHandler(async (req, res) => {
 // POST /api/auth/login
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email }).select('+password');
+  
+  // Cast email to a string to prevent NoSQL injection via object payloads (e.g., { "$gt": "" })
+  const user = await User.findOne({ email: String(email) }).select('+password');
 
   if (!user || !(await user.matchPassword(password))) {
     res.status(401);

@@ -12,6 +12,11 @@
 - 📜 Order history for customers
 - 🛠️ Admin panel: add / edit / delete products, update order status
 
+## 🛡️ Security
+- **NoSQL Injection Prevention**: Hardened database queries to prevent object injection attacks.
+- **Data Integrity**: Safe updates prevent partial subdocument data wiping.
+- **Payload Sanitization**: Robust verification of product prices against the database during checkout to prevent client-side spoofing.
+
 ## 🧱 Tech stack
 
 | Layer    | Tech                                   |
