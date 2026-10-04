@@ -11,6 +11,11 @@ export const createOrder = asyncHandler(async (req, res) => {
     throw new Error('Order must contain at least one item');
   }
 
+  if (!shippingAddress?.pincode || !/^[1-9][0-9]{5}$/.test(String(shippingAddress.pincode))) {
+    res.status(400);
+    throw new Error('Please enter a valid 6-digit Indian pincode');
+  }
+
   // Check that every product exists and has enough stock
   for (const item of items) {
     const product = await Product.findById(item.product);
