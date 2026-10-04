@@ -11,6 +11,7 @@ export default function ProductDetail() {
   const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
+  const [qtyError, setQtyError] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function ProductDetail() {
   if (!product) return <Loader />;
 
   const handleAdd = () => {
+    if (qtyError || qty < 1 || qty > product.stock) return;
     addToCart(product, qty);
     navigate('/cart');
   };
@@ -41,15 +43,35 @@ export default function ProductDetail() {
           {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
         </p>
         {product.stock > 0 && (
-          <div className="row">
-            <input
-              type="number"
-              min="1"
-              value={qty}
-              onChange={(e) => setQty(Number(e.target.value))}
-              className="qty"
-            />
-            <button className="btn" onClick={handleAdd}>Add to cart</button>
+          <div>
+            <div className="row">
+              <input
+                type="number"
+                min="1"
+                max={product.stock}
+                value={qty}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setQty(val);
+                  if (val < 1) {
+                    setQtyError('Quantity must be at least 1');
+                  } else if (val > product.stock) {
+                    setQtyError(`Only ${product.stock} available`);
+                  } else {
+                    setQtyError('');
+                  }
+                }}
+                className="qty"
+              />
+              <button
+                className="btn"
+                disabled={!!qtyError || qty < 1 || qty > product.stock}
+                onClick={handleAdd}
+              >
+                Add to cart
+              </button>
+            </div>
+            {qtyError && <p className="error" style={{ marginTop: '6px' }}>{qtyError}</p>}
           </div>
         )}
         {/* TODO: reviews section - see "Product reviews" issue */}

@@ -26,7 +26,13 @@ export default function Cart() {
               <p className="muted">{formatINR(item.price)} each</p>
             </div>
             <div className="row">
-              <button className="btn btn-ghost" onClick={() => updateQuantity(item.product, item.quantity - 1)}>−</button>
+              <button
+                className="btn btn-ghost"
+                disabled={item.quantity <= 1}
+                onClick={() => updateQuantity(item.product, item.quantity - 1)}
+              >
+                −
+              </button>
               <span>{item.quantity}</span>
               <button className="btn btn-ghost" onClick={() => updateQuantity(item.product, item.quantity + 1)}>+</button>
             </div>
