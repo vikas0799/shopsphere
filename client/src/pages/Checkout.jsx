@@ -15,14 +15,32 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
+  const [pincodeError, setPincodeError] = useState('');
 
-  const update = (key) => (e) => setAddress((a) => ({ ...a, [key]: e.target.value }));
+  const update = (key) => (e) => {
+    const value = e.target.value;
+    setAddress((a) => ({ ...a, [key]: value }));
 
-  // TODO: no validation for pincode format (6 digits) - see issue tracker.
+    if (key === 'pincode') {
+      setPincodeError(
+        value && !/^[1-9][0-9]{5}$/.test(value)
+          ? 'Enter a valid 6-digit Indian PIN code that does not start with 0.'
+          : ''
+      );
+    }
+  };
+
   const placeOrder = async (e) => {
     e.preventDefault();
-    setPlacing(true);
     setError('');
+
+    if (!/^[1-9][0-9]{5}$/.test(address.pincode)) {
+      setPincodeError('Enter a valid 6-digit Indian PIN code that does not start with 0.');
+      return;
+    }
+
+    setPincodeError('');
+    setPlacing(true);
     try {
       const { data } = await api.post('/orders', {
         items: items.map(({ product, name, price, quantity }) => ({ product, name, price, quantity })),
@@ -47,8 +65,19 @@ export default function Checkout() {
         <input required placeholder="Address line" value={address.line1} onChange={update('line1')} />
         <input required placeholder="City" value={address.city} onChange={update('city')} />
         <input required placeholder="State" value={address.state} onChange={update('state')} />
-        <input required placeholder="Pincode" value={address.pincode} onChange={update('pincode')} />
-
+        <input
+          required
+          placeholder="Pincode"
+          value={address.pincode}
+          onChange={update('pincode')}
+          inputMode="numeric"
+          maxLength={6}
+          aria-invalid={Boolean(pincodeError)}
+          aria-describedby={pincodeError ? 'pincode-error' : undefined}
+        />
+        {pincodeError && (
+          <p id="pincode-error" className="error">{pincodeError}</p>
+        )}
         <label>Payment method</label>
         <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
           <option value="COD">Cash on delivery</option>
