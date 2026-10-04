@@ -6,6 +6,8 @@ import { CATEGORIES } from '../utils/format.js';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ search: '', category: '', sort: 'newest' });
@@ -14,13 +16,19 @@ export default function Home() {
     // NOTE: this fires a request on every keystroke - see "Debounce search" issue.
     setLoading(true);
     api
-      .get('/products', { params: filters })
-      .then(({ data }) => setProducts(data))
+      .get('/products', { params: { ...filters, page, limit: 12 } })
+      .then(({ data }) => {
+        setProducts(data.products || data);
+        if (data.totalPages) setTotalPages(data.totalPages);
+      })
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
-  }, [filters]);
+  }, [filters, page]);
 
-  const update = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.value }));
+  const update = (key) => (e) => {
+    setFilters((f) => ({ ...f, [key]: e.target.value }));
+    setPage(1);
+  };
 
   return (
     <section>
@@ -51,11 +59,34 @@ export default function Home() {
       ) : products.length === 0 ? (
         <p className="muted">No products found.</p>
       ) : (
-        <div className="grid">
-          {products.map((p) => (
-            <ProductCard key={p._id} product={p} />
-          ))}
-        </div>
+        <>
+          <div className="grid">
+            {products.map((p) => (
+              <ProductCard key={p._id} product={p} />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="row" style={{ justifyContent: 'center', marginTop: '24px', gap: '12px' }}>
+              <button
+                className="btn btn-ghost"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                ← Previous
+              </button>
+              <span className="muted" style={{ alignSelf: 'center' }}>
+                Page {page} of {totalPages}
+              </span>
+              <button
+                className="btn btn-ghost"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                Next →
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
