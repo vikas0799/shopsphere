@@ -20,6 +20,23 @@
 | Backend  | Node.js, Express, JWT, bcrypt          |
 | Database | MongoDB with Mongoose                  |
 
+## 📸 Screenshots
+
+### Home
+![Home page](docs/screenshots/home.png)
+
+### Product details
+![Product details page](docs/screenshots/product.png)
+
+### Cart
+![Cart page](docs/screenshots/cart.png)
+
+### Checkout
+![Checkout page](docs/screenshots/checkout.png)
+
+### Admin panel
+![Admin products page](docs/screenshots/admin.png)
+
 ## 📁 Folder structure
 
 ```
