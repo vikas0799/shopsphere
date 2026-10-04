@@ -11,7 +11,10 @@ export const createOrder = asyncHandler(async (req, res) => {
     throw new Error('Order must contain at least one item');
   }
 
-  // Check that every product exists and has enough stock
+  let totalAmount = 0;
+  const verifiedItems = [];
+
+  // 1. Verify products, calculate total using DB prices, and sanitize items
   for (const item of items) {
     if (!item.quantity || item.quantity < 1) {
       res.status(400);
@@ -27,17 +30,30 @@ export const createOrder = asyncHandler(async (req, res) => {
       res.status(400);
       throw new Error(`Not enough stock for ${product.name}`);
     }
+
+    totalAmount += product.price * item.quantity;
+    verifiedItems.push({
+      product: product._id,
+      name: product.name,
+      price: product.price, // Trusted price from DB
+      quantity: item.quantity,
+    });
   }
 
-  // TODO: total is currently calculated from prices sent by the client.
-  // This should use prices from the database instead (see issue tracker).
-  const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  // 2. Reduce the stock of the purchased items
+  // Using Promise.all to update all products concurrently
+  await Promise.all(
+    verifiedItems.map((item) =>
+      Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: -item.quantity },
+      })
+    )
+  );
 
-  // TODO: stock is not reduced after an order is placed.
-
+  // 3. Create the order
   const order = await Order.create({
     user: req.user._id,
-    items,
+    items: verifiedItems,
     shippingAddress,
     paymentMethod,
     totalAmount,
@@ -48,13 +64,13 @@ export const createOrder = asyncHandler(async (req, res) => {
 
 // GET /api/orders/mine
 export const getMyOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+  const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 }).lean();
   res.json(orders);
 });
 
 // GET /api/orders/:id
 export const getOrder = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id).populate('user', 'name email');
+  const order = await Order.findById(req.params.id).populate('user', 'name email').lean();
   if (!order) {
     res.status(404);
     throw new Error('Order not found');
@@ -70,7 +86,7 @@ export const getOrder = asyncHandler(async (req, res) => {
 
 // GET /api/orders (admin)
 export const getAllOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find().populate('user', 'name email').sort({ createdAt: -1 });
+  const orders = await Order.find().populate('user', 'name email').sort({ createdAt: -1 }).lean();
   res.json(orders);
 });
 
