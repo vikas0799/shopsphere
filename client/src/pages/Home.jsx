@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import api, { getErrorMessage } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import Loader from '../components/Loader.jsx';
@@ -9,6 +9,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ search: '', category: '', sort: 'newest' });
+  const [toast, setToast] = useState('');
+  const toastTimerRef = useRef(null);
 
   useEffect(() => {
     // NOTE: this fires a request on every keystroke - see "Debounce search" issue.
@@ -19,6 +21,20 @@ export default function Home() {
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
   }, [filters]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
+  const handleAddToCart = (product) => {
+    setToast(`${product.name} added to cart`);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => {
+      setToast('');
+    }, 2000);
+  };
 
   const update = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.value }));
 
@@ -53,8 +69,14 @@ export default function Home() {
       ) : (
         <div className="grid">
           {products.map((p) => (
-            <ProductCard key={p._id} product={p} />
+            <ProductCard key={p._id} product={p} onAddToCart={handleAddToCart} />
           ))}
+        </div>
+      )}
+
+      {toast && (
+        <div className="toast" role="status" aria-live="polite">
+          {toast}
         </div>
       )}
     </section>
