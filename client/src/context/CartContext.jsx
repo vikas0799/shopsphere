@@ -15,6 +15,14 @@ export function CartProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 2000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   const addToCart = (product, quantity = 1) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.product === product._id);
@@ -28,6 +36,7 @@ export function CartProvider({ children }) {
         { product: product._id, name: product.name, price: product.price, image: product.image, quantity },
       ];
     });
+    setToast(`${product.name} added to cart`);
   };
 
   const updateQuantity = (productId, quantity) => {
@@ -48,6 +57,11 @@ export function CartProvider({ children }) {
       value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice }}
     >
       {children}
+      {toast && (
+        <div className="toast" role="status" aria-live="polite">
+          {toast}
+        </div>
+      )}
     </CartContext.Provider>
   );
 }
