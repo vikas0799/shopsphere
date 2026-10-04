@@ -11,6 +11,23 @@
   --radius: 10px;
 }
 
+[data-theme="dark"] {
+  --bg: #0f0f17;
+  --surface: #1a1a28;
+  --text: #f0f0f8;
+  --muted: #9e9eb4;
+  --primary: #7b5ff4;
+  --primary-dark: #6345d8;
+  --danger: #ff5c73;
+  --success: #3dd68c;
+  --border: #2c2c3e;
+}
+
+[data-theme="dark"] .tag {
+  background: #2a2048;
+  color: #b39dfa;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
@@ -51,7 +68,7 @@ img { max-width: 100%; display: block; }
 .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
 input, select, textarea {
   padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius);
-  font: inherit; background: var(--surface);
+  font: inherit; background: var(--surface); color: var(--text);
 }
 .filters input { flex: 1; min-width: 200px; }
 textarea { min-height: 80px; }

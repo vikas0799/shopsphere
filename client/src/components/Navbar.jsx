@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
@@ -6,6 +7,23 @@ export default function Navbar() {
   const { user, logout, isAdmin } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
+
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('shopsphere_theme');
+    if (saved) return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('shopsphere_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   const handleLogout = () => {
     logout();
@@ -22,6 +40,15 @@ export default function Navbar() {
         <NavLink to="/cart">Cart ({totalItems})</NavLink>
         {user && <NavLink to="/orders">My Orders</NavLink>}
         {isAdmin && <NavLink to="/admin/products">Admin</NavLink>}
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
         {user ? (
           <>
             <span className="muted">Hi, {user.name.split(' ')[0]}</span>
