@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import api, { getErrorMessage } from '../api/client.js';
 import Loader from '../components/Loader.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import { formatINR } from '../utils/format.js';
 
 export default function Orders() {
   const location = useLocation();
+  const showToast = useToast();
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState('');
+  const [cancelling, setCancelling] = useState(null);
 
   useEffect(() => {
     api
@@ -15,6 +18,22 @@ export default function Orders() {
       .then(({ data }) => setOrders(data))
       .catch((err) => setError(getErrorMessage(err)));
   }, []);
+
+  const handleCancel = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    setCancelling(orderId);
+    try {
+      const { data } = await api.patch(`/orders/${orderId}/cancel`);
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: data.status } : o))
+      );
+      showToast('Order cancelled successfully');
+    } catch (err) {
+      showToast(getErrorMessage(err), 'error');
+    } finally {
+      setCancelling(null);
+    }
+  };
 
   if (error) return <p className="error">{error}</p>;
   if (!orders) return <Loader />;
@@ -39,7 +58,16 @@ export default function Orders() {
             <span className="muted">{new Date(o.createdAt).toLocaleDateString('en-IN')}</span>
             <strong>{formatINR(o.totalAmount)}</strong>
           </div>
-          {/* TODO: allow customer to cancel a pending order */}
+          {['pending', 'confirmed'].includes(o.status) && (
+            <button
+              className="btn btn-danger"
+              style={{ marginTop: '10px' }}
+              disabled={cancelling === o._id}
+              onClick={() => handleCancel(o._id)}
+            >
+              {cancelling === o._id ? 'Cancelling…' : 'Cancel Order'}
+            </button>
+          )}
         </div>
       ))}
     </section>
