@@ -1,6 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import Toast from './components/Toast.jsx';
+import { useCart } from './context/CartContext.jsx';
 import Home from './pages/Home.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
 import Cart from './pages/Cart.jsx';
@@ -13,6 +15,8 @@ import AdminOrders from './pages/admin/AdminOrders.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 export default function App() {
+  const { toast } = useCart();
+
   return (
     <>
       <Navbar />
@@ -35,6 +39,7 @@ export default function App() {
         </Routes>
       </main>
       <footer className="footer">© {new Date().getFullYear()} ShopSphere · Open-source student project</footer>
+      <Toast message={toast} />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 const CartContext = createContext(null);
 const STORAGE_KEY = 'shopsphere_cart';
@@ -10,10 +10,20 @@ export function CartProvider({ children }) {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   });
+  const [toast, setToast] = useState('');
+  const toastTimerRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
+
+  const showToast = (message) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast(message);
+    toastTimerRef.current = setTimeout(() => {
+      setToast('');
+    }, 2000);
+  };
 
   const addToCart = (product, quantity = 1) => {
     setItems((prev) => {
@@ -28,6 +38,7 @@ export function CartProvider({ children }) {
         { product: product._id, name: product.name, price: product.price, image: product.image, quantity },
       ];
     });
+    showToast(`${product.name} added to cart`);
   };
 
   const updateQuantity = (productId, quantity) => {
@@ -45,7 +56,7 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice }}
+      value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice, toast }}
     >
       {children}
     </CartContext.Provider>
@@ -53,3 +64,4 @@ export function CartProvider({ children }) {
 }
 
 export const useCart = () => useContext(CartContext);
+
