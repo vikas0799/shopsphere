@@ -18,7 +18,11 @@ const orderSchema = new mongoose.Schema(
       line1: { type: String, required: true },
       city: { type: String, required: true },
       state: { type: String, required: true },
-      pincode: { type: String, required: true },
+      pincode: {
+        type: String,
+        required: true,
+        match: [/^[1-9][0-9]{5}$/, 'Pincode must be exactly 6 digits and not start with 0'],
+      },
     },
     paymentMethod: { type: String, enum: ['COD', 'ONLINE'], default: 'COD' },
     totalAmount: { type: Number, required: true },
