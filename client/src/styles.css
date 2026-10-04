@@ -11,6 +11,22 @@
   --radius: 10px;
 }
 
+[data-theme="dark"] {
+  --bg: #12121a;
+  --surface: #1c1c28;
+  --text: #f4f4f8;
+  --muted: #c2c2d2;
+  --primary: #c4b5fd;
+  --primary-dark: #ddd6fe;
+  --danger: #ff8b9a;
+  --success: #6ee7a8;
+  --border: #34344a;
+}
+
+[data-theme="dark"] .btn { color: #1c1c28 !important; }
+[data-theme="dark"] .btn-ghost { color: var(--primary) !important; }
+[data-theme="dark"] .tag { background: #2c2550; color: #ddd6fe; }
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
