@@ -5,6 +5,8 @@ import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatINR } from '../utils/format.js';
 
+const PINCODE_REGEX = /^[1-9][0-9]{5}$/;
+
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
@@ -16,11 +18,18 @@ export default function Checkout() {
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
 
+  const [pincodeError, setPincodeError] = useState('');
+
   const update = (key) => (e) => setAddress((a) => ({ ...a, [key]: e.target.value }));
 
-  // TODO: no validation for pincode format (6 digits) - see issue tracker.
+
   const placeOrder = async (e) => {
     e.preventDefault();
+    if (!PINCODE_REGEX.test(address.pincode)) {
+      setPincodeError('Enter a valid 6-digit pincode (it cannot start with 0).');
+      return;
+    }
+    setPincodeError('');
     setPlacing(true);
     setError('');
     try {
@@ -48,6 +57,8 @@ export default function Checkout() {
         <input required placeholder="City" value={address.city} onChange={update('city')} />
         <input required placeholder="State" value={address.state} onChange={update('state')} />
         <input required placeholder="Pincode" value={address.pincode} onChange={update('pincode')} />
+
+        {pincodeError && <p className="error">{pincodeError}</p>}
 
         <label>Payment method</label>
         <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
