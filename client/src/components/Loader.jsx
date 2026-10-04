@@ -1,3 +1,8 @@
 export default function Loader({ text = 'Loading...' }) {
-  return <p className="loader">{text}</p>;
+  return (
+    <div className="loader">
+      <div className="spinner" />
+      <p>{text}</p>
+    </div>
+  );
 }
