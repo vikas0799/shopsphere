@@ -41,8 +41,12 @@ export default function AdminProducts() {
   };
 
   // TODO: add a confirmation dialog before deleting.
-  const remove = async (id) => {
-    await api.delete(`/products/${id}`);
+  const remove = async (product) => {
+    const confirmed = window.confirm(`Delete "${product.name}"?`);
+
+    if (!confirmed) return;
+
+    await api.delete(`/products/${product._id}`);
     load();
   };
 
@@ -92,7 +96,7 @@ export default function AdminProducts() {
               <td>{p.stock}</td>
               <td className="row">
                 <button className="btn btn-ghost" onClick={() => edit(p)}>Edit</button>
-                <button className="btn btn-danger" onClick={() => remove(p._id)}>Delete</button>
+                <button className="btn btn-danger" onClick={() => remove(p)}>Delete</button>
               </td>
             </tr>
           ))}
