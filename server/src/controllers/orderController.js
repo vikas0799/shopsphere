@@ -28,7 +28,17 @@ export const createOrder = asyncHandler(async (req, res) => {
   // This should use prices from the database instead (see issue tracker).
   const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  // TODO: stock is not reduced after an order is placed.
+  // Decrement stock atomically for each product to prevent overselling
+  for (const item of items) {
+    const result = await Product.updateOne(
+      { _id: item.product, stock: { $gte: item.quantity } },
+      { $inc: { stock: -item.quantity } }
+    );
+    if (result.matchedCount === 0 || result.modifiedCount === 0) {
+      res.status(400);
+      throw new Error(`Not enough stock for ${item.name || 'product'}`);
+    }
+  }
 
   const order = await Order.create({
     user: req.user._id,
@@ -76,7 +86,18 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Order not found');
   }
-  order.status = req.body.status;
+
+  const previousStatus = order.status;
+  const newStatus = req.body.status;
+
+  // Restore product stock if order is cancelled
+  if (previousStatus !== 'cancelled' && newStatus === 'cancelled') {
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, { $inc: { stock: item.quantity } });
+    }
+  }
+
+  order.status = newStatus;
   await order.save();
   res.json(order);
 });
