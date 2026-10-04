@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
       state: String,
       pincode: String,
     },
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
   },
   { timestamps: true }
 );
