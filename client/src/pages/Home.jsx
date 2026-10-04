@@ -9,18 +9,26 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ search: '', category: '', sort: 'newest' });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     // NOTE: this fires a request on every keystroke - see "Debounce search" issue.
     setLoading(true);
     api
-      .get('/products', { params: filters })
-      .then(({ data }) => setProducts(data))
+      .get('/products', { params: { ...filters, page } })
+      .then(({ data }) => {
+        setProducts(data.products);
+        setTotalPages(data.totalPages);
+      })
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
-  }, [filters]);
+  }, [filters, page]);
 
-  const update = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.value }));
+  const update = (key) => (e) => {
+    setFilters((f) => ({ ...f, [key]: e.target.value }));
+    setPage(1);
+  };
 
   return (
     <section>
@@ -55,6 +63,18 @@ export default function Home() {
           {products.map((p) => (
             <ProductCard key={p._id} product={p} />
           ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="row pagination">
+          <button className="btn btn-ghost" onClick={() => setPage(page - 1)} disabled={page <= 1}>
+            Previous
+          </button>
+          <span className="muted">Page {page} of {totalPages}</span>
+          <button className="btn btn-ghost" onClick={() => setPage(page + 1)} disabled={page >= totalPages}>
+            Next
+          </button>
         </div>
       )}
     </section>

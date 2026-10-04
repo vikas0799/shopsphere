@@ -1,11 +1,16 @@
 import Product from '../models/Product.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
-// GET /api/products?search=&category=&minPrice=&maxPrice=&sort=
-// NOTE: there is no pagination yet - see the "Add pagination" issue.
+// GET /api/products?search=&category=&minPrice=&maxPrice=&sort=&page=&limit=
 export const getProducts = asyncHandler(async (req, res) => {
   const { search, category, minPrice, maxPrice, sort } = req.query;
   const filter = {};
+
+  let page = parseInt(req.query.page, 10) || 1;
+  let limit = parseInt(req.query.limit, 10) || 12;
+  if (page < 1) page = 1;
+  if (limit < 1) limit = 12;
+  if (limit > 100) limit = 100;
 
   if (search) filter.$text = { $search: search };
   if (category) filter.category = category;
@@ -22,8 +27,17 @@ export const getProducts = asyncHandler(async (req, res) => {
     rating: { rating: -1 },
   };
 
-  const products = await Product.find(filter).sort(sortMap[sort] || { createdAt: -1 });
-  res.json(products);
+  // _id as last key so equal values keep the same order on every page
+  const sortBy = { ...(sortMap[sort] || { createdAt: -1 }), _id: 1 };
+
+  const total = await Product.countDocuments(filter);
+  const totalPages = Math.ceil(total / limit);
+  const products = await Product.find(filter)
+    .sort(sortBy)
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  res.json({ products, page, totalPages, total });
 });
 
 // GET /api/products/:id

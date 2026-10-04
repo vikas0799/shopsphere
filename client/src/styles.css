@@ -69,6 +69,7 @@ textarea { min-height: 80px; }
 .row { display: flex; gap: 10px; align-items: center; }
 .row-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .grow { flex: 1; }
+.pagination { justify-content: center; margin-top: 24px; }
 .muted { color: var(--muted); }
 .error { color: var(--danger); }
 .success { color: var(--success); }
