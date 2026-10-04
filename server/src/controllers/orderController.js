@@ -28,7 +28,23 @@ export const createOrder = asyncHandler(async (req, res) => {
   // This should use prices from the database instead (see issue tracker).
   const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  // TODO: stock is not reduced after an order is placed.
+  // Atomically decrement stock for each item
+  const decrementedItems = [];
+  for (const item of items) {
+    const result = await Product.updateOne(
+      { _id: item.product, stock: { $gte: item.quantity } },
+      { $inc: { stock: -item.quantity } }
+    );
+    if (result.modifiedCount === 0) {
+      // Rollback any items decremented so far in this request
+      for (const prev of decrementedItems) {
+        await Product.updateOne({ _id: prev.product }, { $inc: { stock: prev.quantity } });
+      }
+      res.status(400);
+      throw new Error('Not enough stock available to complete your order');
+    }
+    decrementedItems.push(item);
+  }
 
   const order = await Order.create({
     user: req.user._id,
@@ -76,7 +92,25 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Order not found');
   }
-  order.status = req.body.status;
+
+  const prevStatus = order.status;
+  const newStatus = req.body.status;
+
+  // Restore stock if order is cancelled
+  if (prevStatus !== 'cancelled' && newStatus === 'cancelled') {
+    for (const item of order.items) {
+      await Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } });
+    }
+  } else if (prevStatus === 'cancelled' && newStatus !== 'cancelled') {
+    for (const item of order.items) {
+      await Product.updateOne(
+        { _id: item.product, stock: { $gte: item.quantity } },
+        { $inc: { stock: -item.quantity } }
+      );
+    }
+  }
+
+  order.status = newStatus;
   await order.save();
   res.json(order);
 });
