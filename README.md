@@ -11,6 +11,15 @@
 - 🚚 Checkout with shipping address and Cash on Delivery
 - 📜 Order history for customers
 - 🛠️ Admin panel: add / edit / delete products, update order status
+## 📸 Screenshots
+
+### Home page
+
+![ShopSphere home page](./docs/images/home.png)
+
+### Shopping cart
+
+![ShopSphere shopping cart](./docs/images/cart.png)
 
 ## 🧱 Tech stack
 
