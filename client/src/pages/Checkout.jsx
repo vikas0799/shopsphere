@@ -21,6 +21,12 @@ export default function Checkout() {
   // TODO: no validation for pincode format (6 digits) - see issue tracker.
   const placeOrder = async (e) => {
     e.preventDefault();
+
+    if (!/^\d{6}$/.test(address.pincode)) {
+      setError('Pincode must be exactly 6 digits.');
+      return;
+    }
+
     setPlacing(true);
     setError('');
     try {
