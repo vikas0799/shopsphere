@@ -97,7 +97,21 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Order not found');
   }
-  order.status = req.body.status;
+  
+  const { status } = req.body;
+
+  // Restore inventory if an active order is being cancelled
+  if (status === 'cancelled' && order.status !== 'cancelled') {
+    await Promise.all(
+      order.items.map((item) =>
+        Product.findByIdAndUpdate(item.product, {
+          $inc: { stock: item.quantity },
+        })
+      )
+    );
+  }
+
+  order.status = status;
   await order.save();
   res.json(order);
 });
