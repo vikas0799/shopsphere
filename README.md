@@ -12,6 +12,24 @@
 - 📜 Order history for customers
 - 🛠️ Admin panel: add / edit / delete products, update order status
 
+## 📸 Screenshots
+
+| View | Screenshot |
+| :--- | :--- |
+| **Home & Product Catalog** | ![Home](./docs/screenshots/home.svg) |
+| **Product Detail** | ![Product Detail](./docs/screenshots/product.svg) |
+| **Shopping Cart** | ![Cart](./docs/screenshots/cart.svg) |
+| **Checkout & Shipping** | ![Checkout](./docs/screenshots/checkout.svg) |
+| **Admin Management** | ![Admin](./docs/screenshots/admin.svg) |
+
+### 🎬 Application Workflow & Demo
+
+1. **Browse & Search**: Explore catalog items with debounced search, category filters, and pricing/rating sorting.
+2. **Product Details**: Inspect specifications, availability, and select quantities to add to cart.
+3. **Cart & Checkout**: Review cart items, modify quantities, and place orders with validated shipping details.
+4. **Order History**: Track past and pending orders with real-time status updates.
+5. **Admin Panel**: Manage product catalog inventory (add/edit/delete with confirmation) and review customer orders.
+
 ## 🧱 Tech stack
 
 | Layer    | Tech                                   |
