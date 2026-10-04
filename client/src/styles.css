@@ -11,6 +11,18 @@
   --radius: 10px;
 }
 
+[data-theme="dark"] {
+  --bg: #121218;
+  --surface: #1e1e2a;
+  --text: #f0f0f6;
+  --muted: #9a9ab0;
+  --primary: #8a6ef5;
+  --primary-dark: #7150e8;
+  --danger: #f2556b;
+  --success: #2ec26f;
+  --border: #2e2e40;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
