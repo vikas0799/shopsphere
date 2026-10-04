@@ -5,8 +5,10 @@ import {
   getOrder,
   getAllOrders,
   updateOrderStatus,
+  cancelOrder,
 } from '../controllers/orderController.js';
 import { protect, adminOnly } from '../middleware/auth.js';
+
 
 const router = Router();
 
@@ -16,5 +18,7 @@ router.route('/').post(createOrder).get(adminOnly, getAllOrders);
 router.get('/mine', getMyOrders);
 router.get('/:id', getOrder);
 router.patch('/:id/status', adminOnly, updateOrderStatus);
+router.patch('/:id/cancel', cancelOrder);
+
 
 export default router;
