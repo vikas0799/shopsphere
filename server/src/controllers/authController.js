@@ -20,20 +20,40 @@ export const register = asyncHandler(async (req, res) => {
     throw new Error('Name, email and password are required');
   }
 
-  const exists = await User.findOne({ email });
+  // Prevent NoSQL injection and schema casting crashes
+  if (typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+    res.status(400);
+    throw new Error('Invalid input data format');
+  }
+
+  const normalizedEmail = email.toLowerCase();
+  const exists = await User.findOne({ email: normalizedEmail });
   if (exists) {
     res.status(409);
     throw new Error('Email already registered');
   }
 
-  const user = await User.create({ name, email, password });
+  const user = await User.create({ name, email: normalizedEmail, password });
   res.status(201).json(userResponse(user));
 });
 
 // POST /api/auth/login
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email }).select('+password');
+
+  if (!email || !password) {
+    res.status(400);
+    throw new Error('Please provide an email and password');
+  }
+
+  // Prevent NoSQL injection vectors like { "$ne": null }
+  if (typeof email !== 'string' || typeof password !== 'string') {
+    res.status(400);
+    throw new Error('Invalid input data format');
+  }
+
+  const normalizedEmail = email.toLowerCase();
+  const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
   if (!user || !(await user.matchPassword(password))) {
     res.status(401);
