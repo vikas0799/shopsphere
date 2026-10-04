@@ -1,10 +1,17 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import { formatINR } from '../utils/format.js';
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
+  const { showToast } = useToast();
   const outOfStock = product.stock === 0;
+
+  const handleAdd = () => {
+    addToCart(product);
+    showToast(`${product.name} added to cart`);
+  };
 
   return (
     <article className="card product-card">
@@ -18,7 +25,7 @@ export default function ProductCard({ product }) {
           <strong>{formatINR(product.price)}</strong>
           <span className="muted">★ {product.rating.toFixed(1)}</span>
         </div>
-        <button className="btn full" disabled={outOfStock} onClick={() => addToCart(product)}>
+        <button className="btn full" disabled={outOfStock} onClick={handleAdd}>
           {outOfStock ? 'Out of stock' : 'Add to cart'}
         </button>
       </div>
