@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+
+      - name: Install server dependencies
+        run: npm ci || npm install
+        working-directory: server
+
+      - name: Install client dependencies
+        run: npm ci || npm install
+        working-directory: client
+
+      - name: Build client
+        run: npm run build
+        working-directory: client
