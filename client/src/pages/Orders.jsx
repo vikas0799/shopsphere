@@ -16,6 +16,15 @@ export default function Orders() {
       .catch((err) => setError(getErrorMessage(err)));
   }, []);
 
+  const cancelOrder = async (id) => {
+    try {
+      const { data } = await api.patch(`/orders/${id}/cancel`);
+      setOrders((list) => list.map((o) => (o._id === id ? data : o)));
+    } catch (err) {
+      alert(getErrorMessage(err));
+    }
+  };
+
   if (error) return <p className="error">{error}</p>;
   if (!orders) return <Loader />;
 
@@ -39,7 +48,11 @@ export default function Orders() {
             <span className="muted">{new Date(o.createdAt).toLocaleDateString('en-IN')}</span>
             <strong>{formatINR(o.totalAmount)}</strong>
           </div>
-          {/* TODO: allow customer to cancel a pending order */}
+          {['pending', 'confirmed'].includes(o.status) && (
+            <button className="btn btn-danger" onClick={() => cancelOrder(o._id)}>
+              Cancel order
+            </button>
+          )}
         </div>
       ))}
     </section>
