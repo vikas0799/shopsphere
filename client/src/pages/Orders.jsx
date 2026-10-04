@@ -9,12 +9,26 @@ export default function Orders() {
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  const loadOrders = () => {
     api
       .get('/orders/mine')
       .then(({ data }) => setOrders(data))
       .catch((err) => setError(getErrorMessage(err)));
+  };
+
+  useEffect(() => {
+    loadOrders();
   }, []);
+
+  const handleCancel = async (id) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    try {
+      await api.patch(`/orders/${id}/cancel`);
+      loadOrders();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  };
 
   if (error) return <p className="error">{error}</p>;
   if (!orders) return <Loader />;
@@ -39,7 +53,13 @@ export default function Orders() {
             <span className="muted">{new Date(o.createdAt).toLocaleDateString('en-IN')}</span>
             <strong>{formatINR(o.totalAmount)}</strong>
           </div>
-          {/* TODO: allow customer to cancel a pending order */}
+          {(o.status === 'pending' || o.status === 'confirmed') && (
+            <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => handleCancel(o._id)}>
+                Cancel order
+              </button>
+            </div>
+          )}
         </div>
       ))}
     </section>
