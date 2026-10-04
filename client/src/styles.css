@@ -45,6 +45,19 @@ img { max-width: 100%; display: block; }
 .btn-danger { background: var(--danger); }
 .full { width: 100%; }
 
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  background: var(--text);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  font-size: 0.95rem;
+}
+
 .hero { padding: 24px 0; }
 .hero h1 { margin: 0 0 6px; font-size: 2rem; }
 
