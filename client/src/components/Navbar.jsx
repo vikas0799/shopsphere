@@ -21,6 +21,7 @@ export default function Navbar() {
         <NavLink to="/">Shop</NavLink>
         <NavLink to="/cart">Cart ({totalItems})</NavLink>
         {user && <NavLink to="/orders">My Orders</NavLink>}
+        {user && <NavLink to="/wishlist">My Wishlist ♥</NavLink>}
         {isAdmin && <NavLink to="/admin/products">Admin</NavLink>}
         {user ? (
           <>

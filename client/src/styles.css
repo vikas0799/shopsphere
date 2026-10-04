@@ -60,6 +60,37 @@ textarea { min-height: 80px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .card-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .product-card img { aspect-ratio: 3 / 2; object-fit: cover; width: 100%; }
+.product-image-wrap {
+  position: relative;
+}
+
+.wishlist-heart {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--danger);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 12%);
+}
+
+.wishlist-heart:hover {
+  transform: scale(1.08);
+}
+
+.wishlist-heart:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .product-name { color: var(--text); font-weight: 600; }
 .tag {
   align-self: flex-start; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;
