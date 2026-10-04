@@ -15,6 +15,11 @@ export const errorHandler = (err, req, res, next) => {
     status = 409;
     err.message = 'Duplicate value: this record already exists';
   }
+  if (err.name === 'ValidationError') {
+    status = 400;
+    const messages = Object.values(err.errors).map((val) => val.message);
+    err.message = `Validation Error: ${messages.join(', ')}`;
+  }
 
   res.status(status).json({
     message: err.message,
