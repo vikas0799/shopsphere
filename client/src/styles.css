@@ -59,7 +59,40 @@ textarea { min-height: 80px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .card-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.product-card-image-wrapper {
+  position: relative;
+}
 .product-card img { aspect-ratio: 3 / 2; object-fit: cover; width: 100%; }
+.wishlist-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.wishlist-btn:hover {
+  background: #ffffff;
+  color: var(--danger);
+  transform: scale(1.1);
+}
+.wishlist-btn.active {
+  color: var(--danger);
+  background: #ffffff;
+}
+.active-wishlist {
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
+}
 .product-name { color: var(--text); font-weight: 600; }
 .tag {
   align-self: flex-start; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;
