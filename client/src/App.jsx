@@ -1,4 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
+import { useCart } from './context/CartContext.jsx';
+import Toast from './components/Toast.jsx';
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Home from './pages/Home.jsx';
@@ -13,8 +15,10 @@ import AdminOrders from './pages/admin/AdminOrders.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 export default function App() {
+  const { toast } = useCart();
   return (
     <>
+      <Toast message={toast} />
       <Navbar />
       <main className="container">
         <Routes>

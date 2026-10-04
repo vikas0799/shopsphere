@@ -11,6 +11,8 @@ export function CartProvider({ children }) {
     return stored ? JSON.parse(stored) : [];
   });
 
+  const [toast, setToast] = useState('');
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
@@ -28,6 +30,9 @@ export function CartProvider({ children }) {
         { product: product._id, name: product.name, price: product.price, image: product.image, quantity },
       ];
     });
+
+    setToast(`${product.name} added to cart`);
+    setTimeout(() => setToast(''), 2000);
   };
 
   const updateQuantity = (productId, quantity) => {
@@ -45,7 +50,7 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice }}
+     value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice, toast }}
     >
       {children}
     </CartContext.Provider>
