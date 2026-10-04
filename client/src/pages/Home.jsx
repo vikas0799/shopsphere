@@ -49,7 +49,17 @@ export default function Home() {
       {loading ? (
         <Loader />
       ) : products.length === 0 ? (
-        <p className="muted">No products found.</p>
+        <div className="empty-state">
+          <span className="empty-icon">🔍</span>
+          <h2>No products found</h2>
+          <p className="muted">Try a different search term or category.</p>
+          <button
+            className="btn"
+            onClick={() => setFilters({ search: '', category: '', sort: 'newest' })}
+          >
+            Clear filters
+          </button>
+        </div>
       ) : (
         <div className="grid">
           {products.map((p) => (
