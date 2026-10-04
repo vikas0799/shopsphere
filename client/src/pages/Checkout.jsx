@@ -18,11 +18,16 @@ export default function Checkout() {
 
   const update = (key) => (e) => setAddress((a) => ({ ...a, [key]: e.target.value }));
 
-  // TODO: no validation for pincode format (6 digits) - see issue tracker.
   const placeOrder = async (e) => {
     e.preventDefault();
-    setPlacing(true);
     setError('');
+
+    if (!/^[1-9][0-9]{5}$/.test(address.pincode)) {
+      setError('Please enter a valid 6-digit Indian pincode.');
+      return;
+    }
+
+    setPlacing(true);
     try {
       const { data } = await api.post('/orders', {
         items: items.map(({ product, name, price, quantity }) => ({ product, name, price, quantity })),
