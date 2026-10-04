@@ -11,8 +11,9 @@ export const getProducts = asyncHandler(async (req, res) => {
   if (category) filter.category = category;
   if (minPrice || maxPrice) {
     filter.price = {};
-    if (minPrice) filter.price.$gte = Number(minPrice);
-    if (maxPrice) filter.price.$lte = Number(maxPrice);
+    if (minPrice && !isNaN(Number(minPrice))) filter.price.$gte = Number(minPrice);
+    if (maxPrice && !isNaN(Number(maxPrice))) filter.price.$lte = Number(maxPrice);
+    if (Object.keys(filter.price).length === 0) delete filter.price;
   }
 
   const sortMap = {

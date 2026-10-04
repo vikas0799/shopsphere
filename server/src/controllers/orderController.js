@@ -13,6 +13,11 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   // Check that every product exists and has enough stock
   for (const item of items) {
+    if (!item.quantity || item.quantity < 1) {
+      res.status(400);
+      throw new Error('Quantity for all items must be at least 1');
+    }
+
     const product = await Product.findById(item.product);
     if (!product) {
       res.status(404);
