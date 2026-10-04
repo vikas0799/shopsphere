@@ -13,6 +13,10 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   // Check that every product exists and has enough stock
   for (const item of items) {
+    if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+      res.status(400);
+      throw new Error('Quantity must be a whole number of at least 1');
+    }
     const product = await Product.findById(item.product);
     if (!product) {
       res.status(404);
@@ -28,15 +32,41 @@ export const createOrder = asyncHandler(async (req, res) => {
   // This should use prices from the database instead (see issue tracker).
   const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  // TODO: stock is not reduced after an order is placed.
+  // Reduce stock atomically so two parallel orders cannot oversell.
+  // The filter only matches while enough stock is left. If it does not match,
+  // put back what was already taken for earlier items and reject the order.
+  const reduced = [];
+  const restoreStock = () =>
+    Promise.all(
+      reduced.map((i) => Product.updateOne({ _id: i.product }, { $inc: { stock: i.quantity } }))
+    );
 
-  const order = await Order.create({
-    user: req.user._id,
-    items,
-    shippingAddress,
-    paymentMethod,
-    totalAmount,
-  });
+  for (const item of items) {
+    const result = await Product.updateOne(
+      { _id: item.product, stock: { $gte: item.quantity } },
+      { $inc: { stock: -item.quantity } }
+    );
+    if (!result.modifiedCount) {
+      await restoreStock();
+      res.status(400);
+      throw new Error(`Not enough stock for ${item.name || 'one of the items'}`);
+    }
+    reduced.push(item);
+  }
+
+  let order;
+  try {
+    order = await Order.create({
+      user: req.user._id,
+      items,
+      shippingAddress,
+      paymentMethod,
+      totalAmount,
+    });
+  } catch (err) {
+    await restoreStock();
+    throw err;
+  }
 
   res.status(201).json(order);
 });
