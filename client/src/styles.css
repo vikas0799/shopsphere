@@ -11,6 +11,18 @@
   --radius: 10px;
 }
 
+[data-theme="dark"] {
+  --bg: #121218;
+  --surface: #1b1b26;
+  --text: #f1f1f8;
+  --muted: #9b9ba8;
+  --primary: #8a6cf7;
+  --primary-dark: #7656eb;
+  --danger: #f85169;
+  --success: #2bc46d;
+  --border: #2c2c3d;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
@@ -51,7 +63,7 @@ img { max-width: 100%; display: block; }
 .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
 input, select, textarea {
   padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius);
-  font: inherit; background: var(--surface);
+  font: inherit; background: var(--surface); color: var(--text);
 }
 .filters input { flex: 1; min-width: 200px; }
 textarea { min-height: 80px; }
@@ -65,6 +77,9 @@ textarea { min-height: 80px; }
   align-self: flex-start; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;
   background: #efeafd; color: var(--primary); padding: 2px 8px; border-radius: 999px;
 }
+[data-theme="dark"] .tag { background: rgba(138, 108, 247, 0.18); color: var(--primary); }
+
+.theme-toggle { font-size: 1.1rem; padding: 6px 10px; line-height: 1; cursor: pointer; }
 
 .row { display: flex; gap: 10px; align-items: center; }
 .row-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
