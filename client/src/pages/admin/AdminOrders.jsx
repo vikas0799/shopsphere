@@ -7,10 +7,12 @@ const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
+  const [stats, setStats] = useState(null);
 
   const load = () => api.get('/orders').then(({ data }) => setOrders(data));
   useEffect(() => {
     load();
+    api.get('/admin/stats').then(({ data }) => setStats(data));
   }, []);
 
   const changeStatus = async (id, status) => {
@@ -24,7 +26,14 @@ export default function AdminOrders() {
         <h1>Admin · Orders</h1>
         <Link to="/admin/products" className="btn btn-ghost">← Products</Link>
       </div>
-      {/* TODO: dashboard cards - total revenue, orders today, low-stock products */}
+      {stats && (
+        <div className="stat-grid">
+          <div className="card stat-card"><p className="muted">Revenue (delivered)</p><h2>{formatINR(stats.totalRevenue)}</h2></div>
+          <div className="card stat-card"><p className="muted">Orders today</p><h2>{stats.ordersToday}</h2></div>
+          <div className="card stat-card"><p className="muted">Pending orders</p><h2>{stats.pendingOrders}</h2></div>
+          <div className="card stat-card"><p className="muted">Low stock</p><h2>{stats.lowStockProducts}</h2></div>
+        </div>
+      )}
       <table className="table">
         <thead>
           <tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr>
