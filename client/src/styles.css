@@ -100,4 +100,60 @@ textarea { min-height: 80px; }
 .empty { text-align: center; padding: 60px 0; }
 .footer { text-align: center; color: var(--muted); padding: 24px; border-top: 1px solid var(--border); }
 
-/* TODO: the layout breaks on small screens (<600px) - see "Mobile responsive" issue */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .nav-links {
+    gap: 12px;
+  }
+  .detail {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .nav-links {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .detail {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .cart-item img {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: cover;
+  }
+  .summary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+  .admin-form .row {
+    flex-direction: column;
+  }
+}
