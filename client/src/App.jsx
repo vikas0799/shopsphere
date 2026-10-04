@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
+import Toast from './components/Toast.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Home from './pages/Home.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
@@ -16,6 +17,7 @@ export default function App() {
   return (
     <>
       <Navbar />
+      <Toast />
       <main className="container">
         <Routes>
           <Route path="/" element={<Home />} />

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 const CartContext = createContext(null);
 const STORAGE_KEY = 'shopsphere_cart';
@@ -11,11 +11,16 @@ export function CartProvider({ children }) {
     return stored ? JSON.parse(stored) : [];
   });
 
+  const [toast, setToast] = useState(null);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
+  const clearToast = useCallback(() => setToast(null), []);
+
   const addToCart = (product, quantity = 1) => {
+    setToast({ id: Date.now(), message: `${product.name} added to cart` });
     setItems((prev) => {
       const existing = prev.find((i) => i.product === product._id);
       if (existing) {
@@ -45,7 +50,7 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice }}
+      value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice, toast, clearToast }}
     >
       {children}
     </CartContext.Provider>
