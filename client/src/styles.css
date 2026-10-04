@@ -10,6 +10,13 @@
   --border: #e4e4ee;
   --radius: 10px;
 }
+:root[data-theme='dark'] {
+  --bg: #18181f;
+  --surface: #24242d;
+  --text: #f4f4f7;
+  --muted: #aaaabc;
+  --border: #3a3a46;
+}
 
 * { box-sizing: border-box; }
 body {
