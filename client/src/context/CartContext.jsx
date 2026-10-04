@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 const CartContext = createContext(null);
 const STORAGE_KEY = 'shopsphere_cart';
@@ -11,9 +11,22 @@ export function CartProvider({ children }) {
     return stored ? JSON.parse(stored) : [];
   });
 
+  // Toast notification state – null means hidden, a string shows the message.
+  const [toast, setToast] = useState(null);
+  const toastTimerRef = useRef(null);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
+
+  /** Show a toast message for ~2 seconds, resetting the timer on each call. */
+  const showToast = (message) => {
+    setToast(message);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => {
+      setToast(null);
+    }, 2000);
+  };
 
   const addToCart = (product, quantity = 1) => {
     setItems((prev) => {
@@ -28,6 +41,7 @@ export function CartProvider({ children }) {
         { product: product._id, name: product.name, price: product.price, image: product.image, quantity },
       ];
     });
+    showToast(`"${product.name}" added to cart`);
   };
 
   const updateQuantity = (productId, quantity) => {
@@ -45,7 +59,7 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice }}
+      value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice, toast }}
     >
       {children}
     </CartContext.Provider>
