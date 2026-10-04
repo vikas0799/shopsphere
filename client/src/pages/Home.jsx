@@ -9,18 +9,31 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ search: '', category: '', sort: 'newest' });
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
 
   useEffect(() => {
-    // NOTE: this fires a request on every keystroke - see "Debounce search" issue.
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(filters.search);
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [filters.search]);
+
+  useEffect(() => {
     setLoading(true);
+    setError('');
+
     api
-      .get('/products', { params: filters })
+      .get('/products', {
+        params: { ...filters, search: debouncedSearch },
+      })
       .then(({ data }) => setProducts(data))
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
-  }, [filters]);
+  }, [filters.category, filters.sort, debouncedSearch]);
 
-  const update = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.value }));
+  const update = (key) => (e) =>
+    setFilters((f) => ({ ...f, [key]: e.target.value }));
 
   return (
     <section>
@@ -30,7 +43,11 @@ export default function Home() {
       </div>
 
       <div className="filters">
-        <input placeholder="Search products..." value={filters.search} onChange={update('search')} />
+        <input
+          placeholder="Search products..."
+          value={filters.search}
+          onChange={update('search')}
+        />
         <select value={filters.category} onChange={update('category')}>
           <option value="">All categories</option>
           {CATEGORIES.map((c) => (
