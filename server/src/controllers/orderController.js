@@ -11,34 +11,46 @@ export const createOrder = asyncHandler(async (req, res) => {
     throw new Error('Order must contain at least one item');
   }
 
-  // Check that every product exists and has enough stock
-  for (const item of items) {
-    const product = await Product.findById(item.product);
-    if (!product) {
-      res.status(404);
-      throw new Error(`Product not found: ${item.product}`);
-    }
-    if (product.stock < item.quantity) {
-      res.status(400);
-      throw new Error(`Not enough stock for ${product.name}`);
-    }
-  }
-
   // TODO: total is currently calculated from prices sent by the client.
   // This should use prices from the database instead (see issue tracker).
   const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const reserved = [];
 
-  // TODO: stock is not reduced after an order is placed.
+  try {
+    for (const item of items) {
+      const quantity = Number(item.quantity);
+      if (!Number.isInteger(quantity) || quantity < 1) {
+        res.status(400);
+        throw new Error('Each item needs a quantity of at least 1');
+      }
 
-  const order = await Order.create({
-    user: req.user._id,
-    items,
-    shippingAddress,
-    paymentMethod,
-    totalAmount,
-  });
+      const updated = await Product.updateOne(
+        { _id: item.product, stock: { $gte: quantity } },
+        { $inc: { stock: -quantity } }
+      );
+      if (updated.matchedCount === 0) {
+        const product = await Product.findById(item.product);
+        res.status(product ? 400 : 404);
+        throw new Error(product ? `Not enough stock for ${product.name}` : `Product not found: ${item.product}`);
+      }
+      reserved.push({ product: item.product, quantity });
+    }
 
-  res.status(201).json(order);
+    const order = await Order.create({
+      user: req.user._id,
+      items,
+      shippingAddress,
+      paymentMethod,
+      totalAmount,
+    });
+
+    res.status(201).json(order);
+  } catch (err) {
+    await Promise.all(
+      reserved.map((item) => Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } }))
+    );
+    throw err;
+  }
 });
 
 // GET /api/orders/mine
@@ -76,7 +88,14 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Order not found');
   }
-  order.status = req.body.status;
+  const nextStatus = req.body.status;
+  if (nextStatus === 'cancelled' && order.status !== 'cancelled') {
+    await Promise.all(
+      order.items.map((item) => Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } }))
+    );
+  }
+
+  order.status = nextStatus;
   await order.save();
   res.json(order);
 });
