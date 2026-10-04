@@ -11,6 +11,35 @@
   --radius: 10px;
 }
 
+[data-theme="dark"] {
+  --bg: #0f0f17;
+  --surface: #181826;
+  --text: #f0f0f8;
+  --muted: #9e9eb4;
+  --primary: #8a6ef5;
+  --primary-dark: #7452eb;
+  --danger: #ff5c73;
+  --success: #34d37c;
+  --border: #28283c;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .tag {
+  background: #2b2348;
+  color: #c4b5fd;
+}
+
+[data-theme="dark"] .status {
+  background: #232336;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
