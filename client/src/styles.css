@@ -19,7 +19,7 @@ body {
   color: var(--text);
 }
 a { color: var(--primary); text-decoration: none; }
-img { max-width: 100%; display: block; }
+img { max-width: 100%; height: auto; display: block; }
 
 .container { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; min-height: 80vh; }
 
@@ -94,10 +94,108 @@ textarea { min-height: 80px; }
 .status-delivered { color: var(--success); }
 .status-cancelled { color: var(--danger); }
 
-.table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; }
-.table th, .table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table { width: 100%; min-width: 600px; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+.table th, .table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
 
 .empty { text-align: center; padding: 60px 0; }
 .footer { text-align: center; color: var(--muted); padding: 24px; border-top: 1px solid var(--border); }
 
-/* TODO: the layout breaks on small screens (<600px) - see "Mobile responsive" issue */
+@media (max-width: 600px) {
+  .container {
+    padding: 16px 12px 36px;
+  }
+
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .nav-links {
+    width: 100%;
+    gap: 10px 14px;
+    align-items: center;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .filters input,
+  .filters select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .detail {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .detail img {
+    width: 100%;
+    max-height: 360px;
+    object-fit: cover;
+  }
+
+  .cart-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .cart-item img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+
+  .cart-item .grow {
+    width: 100%;
+  }
+
+  .cart-item .row {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .cart-item .btn-danger {
+    align-self: flex-start;
+  }
+
+  .summary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .summary .btn {
+    text-align: center;
+  }
+
+  .form {
+    padding: 16px;
+  }
+
+  .admin-form .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .row-between {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
