@@ -80,3 +80,36 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   await order.save();
   res.json(order);
 });
+
+// PATCH /api/orders/:id/cancel
+export const cancelOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  // Only the order owner can cancel
+  if (!order.user.equals(req.user._id)) {
+    res.status(403);
+    throw new Error('Not authorized to cancel this order');
+  }
+
+  // Only pending or confirmed orders can be cancelled
+  if (!['pending', 'confirmed'].includes(order.status)) {
+    res.status(400);
+    throw new Error(`Cannot cancel an order with status "${order.status}"`);
+  }
+
+  // Restore stock for each item
+  for (const item of order.items) {
+    await Product.findByIdAndUpdate(item.product, {
+      $inc: { stock: item.quantity },
+    });
+  }
+
+  order.status = 'cancelled';
+  await order.save();
+  res.json(order);
+});
+
