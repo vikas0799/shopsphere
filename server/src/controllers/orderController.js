@@ -28,8 +28,6 @@ export const createOrder = asyncHandler(async (req, res) => {
   // This should use prices from the database instead (see issue tracker).
   const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  // TODO: stock is not reduced after an order is placed.
-
   const order = await Order.create({
     user: req.user._id,
     items,
@@ -37,6 +35,13 @@ export const createOrder = asyncHandler(async (req, res) => {
     paymentMethod,
     totalAmount,
   });
+
+  // Reduce stock for each ordered product
+  for (const item of order.items) {
+    await Product.findByIdAndUpdate(item.product, {
+      $inc: { stock: -item.quantity },
+    });
+  }
 
   res.status(201).json(order);
 });
