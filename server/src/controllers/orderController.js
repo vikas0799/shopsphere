@@ -6,33 +6,67 @@ import asyncHandler from '../utils/asyncHandler.js';
 export const createOrder = asyncHandler(async (req, res) => {
   const { items, shippingAddress, paymentMethod } = req.body;
 
-  if (!items || items.length === 0) {
+  if (!Array.isArray(items) || items.length === 0) {
     res.status(400);
     throw new Error('Order must contain at least one item');
   }
 
-  // Check that every product exists and has enough stock
+  // Aggregate quantities by product to prevent duplicate-item stock bypass attacks
+  const productQuantities = new Map();
   for (const item of items) {
-    const product = await Product.findById(item.product);
+    if (!item || typeof item !== 'object') {
+      res.status(400);
+      throw new Error('Invalid item format');
+    }
+
+    const { product, quantity } = item;
+    const qty = Number(quantity);
+
+    if (!Number.isInteger(qty) || qty < 1) {
+      res.status(400);
+      throw new Error('Item quantity must be a positive integer');
+    }
+
+    const productId = String(product || '').trim();
+    if (!productId) {
+      res.status(400);
+      throw new Error('Product ID is required');
+    }
+
+    productQuantities.set(productId, (productQuantities.get(productId) || 0) + qty);
+  }
+
+  // Verify products, check total stock per product, and use database prices/names (ignore client-supplied prices)
+  const orderItems = [];
+  let totalAmount = 0;
+
+  for (const [productId, totalQty] of productQuantities.entries()) {
+    const product = await Product.findById(productId);
     if (!product) {
       res.status(404);
-      throw new Error(`Product not found: ${item.product}`);
+      throw new Error(`Product not found: ${productId}`);
     }
-    if (product.stock < item.quantity) {
+
+    if (product.stock < totalQty) {
       res.status(400);
       throw new Error(`Not enough stock for ${product.name}`);
     }
-  }
 
-  // TODO: total is currently calculated from prices sent by the client.
-  // This should use prices from the database instead (see issue tracker).
-  const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    orderItems.push({
+      product: product._id,
+      name: product.name,
+      price: product.price,
+      quantity: totalQty,
+    });
+
+    totalAmount += product.price * totalQty;
+  }
 
   // TODO: stock is not reduced after an order is placed.
 
   const order = await Order.create({
     user: req.user._id,
-    items,
+    items: orderItems,
     shippingAddress,
     paymentMethod,
     totalAmount,
