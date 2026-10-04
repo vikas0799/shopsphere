@@ -11,34 +11,64 @@ export const createOrder = asyncHandler(async (req, res) => {
     throw new Error('Order must contain at least one item');
   }
 
-  // Check that every product exists and has enough stock
-  for (const item of items) {
-    const product = await Product.findById(item.product);
-    if (!product) {
-      res.status(404);
-      throw new Error(`Product not found: ${item.product}`);
+  let totalAmount = 0;
+  const processedItems = [];
+  const decrementedProducts = [];
+
+  try {
+    // Atomically check stock and decrement for every product
+    for (const item of items) {
+      const product = await Product.findOneAndUpdate(
+        { _id: item.product, stock: { $gte: item.quantity } },
+        { $inc: { stock: -item.quantity } },
+        { new: true }
+      );
+
+      if (!product) {
+        // If atomic update failed, find out why to send correct error message
+        const existingProduct = await Product.findById(item.product);
+        res.status(existingProduct ? 400 : 404);
+        throw new Error(
+          existingProduct
+            ? `Concurrency error: Not enough stock left for ${existingProduct.name}`
+            : `Product not found: ${item.product}`
+        );
+      }
+      
+      // Track successful decrements in case we need to rollback later
+      decrementedProducts.push({ id: product._id, quantity: item.quantity });
+      
+      // Calculate total amount securely
+      totalAmount += product.price * item.quantity;
+      
+      // Construct verified item payload
+      processedItems.push({
+        product: product._id,
+        name: product.name,
+        price: product.price,
+        quantity: item.quantity,
+      });
     }
-    if (product.stock < item.quantity) {
-      res.status(400);
-      throw new Error(`Not enough stock for ${product.name}`);
+
+    const order = await Order.create({
+      user: req.user._id,
+      items: processedItems,
+      shippingAddress,
+      paymentMethod,
+      totalAmount,
+    });
+
+    res.status(201).json(order);
+  } catch (error) {
+    // Rollback stock decrements if the order process fails midway
+    for (const dp of decrementedProducts) {
+      await Product.updateOne(
+        { _id: dp.id },
+        { $inc: { stock: dp.quantity } }
+      );
     }
+    throw error;
   }
-
-  // TODO: total is currently calculated from prices sent by the client.
-  // This should use prices from the database instead (see issue tracker).
-  const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-
-  // TODO: stock is not reduced after an order is placed.
-
-  const order = await Order.create({
-    user: req.user._id,
-    items,
-    shippingAddress,
-    paymentMethod,
-    totalAmount,
-  });
-
-  res.status(201).json(order);
 });
 
 // GET /api/orders/mine
