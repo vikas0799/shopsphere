@@ -28,16 +28,35 @@ export const createOrder = asyncHandler(async (req, res) => {
   // This should use prices from the database instead (see issue tracker).
   const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  // TODO: stock is not reduced after an order is placed.
-
-  const order = await Order.create({
+  const order = new Order({
     user: req.user._id,
     items,
     shippingAddress,
     paymentMethod,
     totalAmount,
   });
+  // validate first so stock is never reduced for a bad order
+  await order.validate();
 
+  // the stock filter makes sure two orders cannot buy the last item
+  const reduced = [];
+  for (const item of items) {
+    const result = await Product.updateOne(
+      { _id: item.product, stock: { $gte: item.quantity } },
+      { $inc: { stock: -item.quantity } }
+    );
+    if (result.modifiedCount === 0) {
+      // someone else bought it first, give back what we already took
+      for (const done of reduced) {
+        await Product.updateOne({ _id: done.product }, { $inc: { stock: done.quantity } });
+      }
+      res.status(400);
+      throw new Error('Not enough stock, please try again');
+    }
+    reduced.push(item);
+  }
+
+  await order.save();
   res.status(201).json(order);
 });
 
