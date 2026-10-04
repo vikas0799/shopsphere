@@ -89,6 +89,25 @@ npm run dev                 # app on http://localhost:5173
 | GET    | `/api/orders`             | Admin    | All orders               |
 | PATCH  | `/api/orders/:id/status`  | Admin    | Change order status      |
 
+## 📸 Screenshots
+
+### Home
+![Home page](docs/screenshots/home.png)
+
+### Product
+![Product detail](docs/screenshots/product.png)
+
+### Cart
+![Shopping cart](docs/screenshots/cart.png)
+
+### Checkout
+![Checkout](docs/screenshots/checkout.png)
+
+### Admin
+![Admin panel](docs/screenshots/admin.png)
+
+
+
 ## 🤝 Contributing
 
 We ❤️ contributions! Read **[CONTRIBUTING.md](./CONTRIBUTING.md)** and pick an issue labelled
