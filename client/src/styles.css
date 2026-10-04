@@ -10,6 +10,17 @@
   --border: #e4e4ee;
   --radius: 10px;
 }
+[data-theme="dark"] {
+  --bg: #121218;
+  --surface: #1c1c26;
+  --text: #f4f4f7;
+  --muted: #b5b5c5;
+  --primary: #8b6cff;
+  --primary-dark: #7657e8;
+  --danger: #ff6b7d;
+  --success: #43c77a;
+  --border: #3a3a4a;
+}
 
 * { box-sizing: border-box; }
 body {
