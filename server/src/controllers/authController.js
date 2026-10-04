@@ -51,8 +51,19 @@ export const getMe = asyncHandler(async (req, res) => {
 // PUT /api/auth/me
 export const updateMe = asyncHandler(async (req, res) => {
   const { name, address } = req.body;
+  
   if (name) req.user.name = name;
-  if (address) req.user.address = address;
+  
+  // Safely merge address fields to avoid wiping out missing fields
+  if (address) {
+    req.user.address = {
+      ...req.user.address,
+      ...address
+    };
+  }
+  
   const saved = await req.user.save();
-  res.json(saved);
+  
+  // Standardize response so we don't leak raw mongoose document fields
+  res.json(userResponse(saved));
 });
