@@ -15,7 +15,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   if (!PINCODE_REGEX.test(shippingAddress?.pincode)) {
     res.status(400);
-    throw new Error('Enter a valid 6-digit pincode (it cannot start with 0)');
+    throw new Error('Pincode must be 6 digits and cannot start with 0.');
   }
 
   // Check that every product exists and has enough stock

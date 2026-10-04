@@ -26,7 +26,7 @@ export default function Checkout() {
   const placeOrder = async (e) => {
     e.preventDefault();
     if (!PINCODE_REGEX.test(address.pincode)) {
-      setPincodeError('Enter a valid 6-digit pincode (it cannot start with 0).');
+      setPincodeError('Pincode must be 6 digits and cannot start with 0.');
       return;
     }
     setPincodeError('');
