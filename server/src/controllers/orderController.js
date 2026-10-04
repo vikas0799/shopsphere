@@ -14,11 +14,19 @@ export const createOrder = asyncHandler(async (req, res) => {
   // Check that every product exists and has enough stock
   for (const item of items) {
     const product = await Product.findById(item.product);
+
     if (!product) {
       res.status(404);
       throw new Error(`Product not found: ${item.product}`);
     }
-    if (product.stock < item.quantity) {
+
+    const updatedProduct = await Product.findOneAndUpdate(
+      { _id: item.product, stock: { $gte: item.quantity } },
+      { $inc: { stock: -item.quantity } },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
       res.status(400);
       throw new Error(`Not enough stock for ${product.name}`);
     }
