@@ -79,6 +79,7 @@ export default function AdminProducts() {
         </div>
       </form>
 
+      <div className="table-scroll">
       <table className="table">
         <thead>
           <tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th /></tr>
@@ -98,6 +99,7 @@ export default function AdminProducts() {
           ))}
         </tbody>
       </table>
+      </div>
     </section>
   );
 }

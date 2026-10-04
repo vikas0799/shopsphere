@@ -100,4 +100,26 @@ textarea { min-height: 80px; }
 .empty { text-align: center; padding: 60px 0; }
 .footer { text-align: center; color: var(--muted); padding: 24px; border-top: 1px solid var(--border); }
 
-/* TODO: the layout breaks on small screens (<600px) - see "Mobile responsive" issue */
+.table-scroll { width: 100%; }
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .nav-links { width: 100%; }
+
+  .hero h1 { font-size: 1.6rem; }
+  .filters input { min-width: 0; width: 100%; }
+
+  .detail { grid-template-columns: 1fr; gap: 16px; }
+
+  .cart-item { flex-direction: column; align-items: flex-start; }
+  .summary { flex-direction: column; align-items: stretch; }
+
+  .admin-form .row { flex-direction: column; }
+  .table-scroll { overflow-x: auto; }
+  .table { min-width: 640px; }
+}
