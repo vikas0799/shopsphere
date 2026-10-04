@@ -8,6 +8,7 @@ import Checkout from './pages/Checkout.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Orders from './pages/Orders.jsx';
+import Wishlist from './pages/Wishlist.jsx';
 import AdminProducts from './pages/admin/AdminProducts.jsx';
 import AdminOrders from './pages/admin/AdminOrders.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -26,6 +27,7 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/wishlist" element={<Wishlist />} />
           </Route>
           <Route element={<ProtectedRoute adminOnly />}>
             <Route path="/admin/products" element={<AdminProducts />} />
