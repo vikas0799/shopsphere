@@ -11,10 +11,12 @@ import Orders from './pages/Orders.jsx';
 import AdminProducts from './pages/admin/AdminProducts.jsx';
 import AdminOrders from './pages/admin/AdminOrders.jsx';
 import NotFound from './pages/NotFound.jsx';
+import { Toaster } from 'react-hot-toast';
 
 export default function App() {
   return (
     <>
+      <Toaster />
       <Navbar />
       <main className="container">
         <Routes>
