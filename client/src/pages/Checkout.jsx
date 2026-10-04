@@ -14,13 +14,34 @@ export default function Checkout() {
   );
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [error, setError] = useState('');
+  const [pincodeError, setPincodeError] = useState('');
   const [placing, setPlacing] = useState(false);
 
-  const update = (key) => (e) => setAddress((a) => ({ ...a, [key]: e.target.value }));
+  const PINCODE_REGEX = /^[1-9][0-9]{5}$/;
 
-  // TODO: no validation for pincode format (6 digits) - see issue tracker.
+  const validatePincode = (val) => {
+    if (!val) return 'Pincode is required';
+    if (!PINCODE_REGEX.test(val)) {
+      return 'Enter a valid 6-digit Indian pincode (cannot start with 0)';
+    }
+    return '';
+  };
+
+  const update = (key) => (e) => {
+    const val = e.target.value;
+    setAddress((a) => ({ ...a, [key]: val }));
+    if (key === 'pincode') {
+      setPincodeError(validatePincode(val));
+    }
+  };
+
   const placeOrder = async (e) => {
     e.preventDefault();
+    const pinErr = validatePincode(address.pincode);
+    if (pinErr) {
+      setPincodeError(pinErr);
+      return;
+    }
     setPlacing(true);
     setError('');
     try {
@@ -48,6 +69,7 @@ export default function Checkout() {
         <input required placeholder="City" value={address.city} onChange={update('city')} />
         <input required placeholder="State" value={address.state} onChange={update('state')} />
         <input required placeholder="Pincode" value={address.pincode} onChange={update('pincode')} />
+        {pincodeError && <span className="error" style={{ fontSize: '0.85rem', marginTop: '-6px' }}>{pincodeError}</span>}
 
         <label>Payment method</label>
         <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
