@@ -2,6 +2,8 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
+const PINCODE_REGEX = /^[1-9][0-9]{5}$/;
+
 // POST /api/orders
 export const createOrder = asyncHandler(async (req, res) => {
   const { items, shippingAddress, paymentMethod } = req.body;
@@ -9,6 +11,11 @@ export const createOrder = asyncHandler(async (req, res) => {
   if (!items || items.length === 0) {
     res.status(400);
     throw new Error('Order must contain at least one item');
+  }
+
+  if (!shippingAddress?.pincode || !PINCODE_REGEX.test(shippingAddress.pincode)) {
+    res.status(400);
+    throw new Error('Please enter a valid 6-digit Indian pincode (cannot start with 0)');
   }
 
   // Check that every product exists and has enough stock
