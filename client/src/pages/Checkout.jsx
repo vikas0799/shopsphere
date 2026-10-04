@@ -14,15 +14,32 @@ export default function Checkout() {
   );
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [error, setError] = useState('');
+  const [pincodeError, setPincodeError] = useState('');
   const [placing, setPlacing] = useState(false);
+
+  const PINCODE_REGEX = /^[1-9][0-9]{5}$/;
 
   const update = (key) => (e) => setAddress((a) => ({ ...a, [key]: e.target.value }));
 
-  // TODO: no validation for pincode format (6 digits) - see issue tracker.
+  const updatePincode = (e) => {
+    const val = e.target.value;
+    setAddress((a) => ({ ...a, pincode: val }));
+    if (val && !PINCODE_REGEX.test(val)) {
+      setPincodeError('Please enter a valid 6-digit Indian pincode (cannot start with 0)');
+    } else {
+      setPincodeError('');
+    }
+  };
+
   const placeOrder = async (e) => {
     e.preventDefault();
+    if (!PINCODE_REGEX.test(address.pincode)) {
+      setPincodeError('Please enter a valid 6-digit Indian pincode (cannot start with 0)');
+      return;
+    }
     setPlacing(true);
     setError('');
+    setPincodeError('');
     try {
       const { data } = await api.post('/orders', {
         items: items.map(({ product, name, price, quantity }) => ({ product, name, price, quantity })),
@@ -47,7 +64,13 @@ export default function Checkout() {
         <input required placeholder="Address line" value={address.line1} onChange={update('line1')} />
         <input required placeholder="City" value={address.city} onChange={update('city')} />
         <input required placeholder="State" value={address.state} onChange={update('state')} />
-        <input required placeholder="Pincode" value={address.pincode} onChange={update('pincode')} />
+        <input
+          required
+          placeholder="Pincode"
+          value={address.pincode}
+          onChange={updatePincode}
+        />
+        {pincodeError && <p className="error" style={{ fontSize: '0.85rem', marginTop: '-0.5rem' }}>{pincodeError}</p>}
 
         <label>Payment method</label>
         <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
