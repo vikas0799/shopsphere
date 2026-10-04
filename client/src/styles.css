@@ -11,6 +11,27 @@
   --radius: 10px;
 }
 
+[data-theme="dark"] {
+  --bg: #0f0f17;
+  --surface: #171724;
+  --text: #f0f0f6;
+  --muted: #9595ab;
+  --primary: #856af8;
+  --primary-dark: #6e4fed;
+  --danger: #ff5c75;
+  --success: #2dd478;
+  --border: #2b2b3f;
+}
+
+[data-theme="dark"] .tag {
+  background: #2b2447;
+  color: #a794fc;
+}
+
+[data-theme="dark"] .status {
+  background: #222233;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
