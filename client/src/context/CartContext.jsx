@@ -11,9 +11,18 @@ export function CartProvider({ children }) {
     return stored ? JSON.parse(stored) : [];
   });
 
+  const [toast, setToast] = useState(null);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => {
+      setToast((current) => (current === message ? null : current));
+    }, 2200);
+  };
 
   const addToCart = (product, quantity = 1) => {
     setItems((prev) => {
@@ -28,6 +37,7 @@ export function CartProvider({ children }) {
         { product: product._id, name: product.name, price: product.price, image: product.image, quantity },
       ];
     });
+    showToast(`🛍️ "${product.name}" added to cart`);
   };
 
   const updateQuantity = (productId, quantity) => {
@@ -48,6 +58,11 @@ export function CartProvider({ children }) {
       value={{ items, addToCart, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice }}
     >
       {children}
+      {toast && (
+        <div className="toast" role="status" aria-live="polite">
+          {toast}
+        </div>
+      )}
     </CartContext.Provider>
   );
 }
