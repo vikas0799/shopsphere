@@ -79,25 +79,27 @@ export default function AdminProducts() {
         </div>
       </form>
 
-      <table className="table">
-        <thead>
-          <tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th /></tr>
-        </thead>
-        <tbody>
-          {products.map((p) => (
-            <tr key={p._id}>
-              <td>{p.name}</td>
-              <td>{p.category}</td>
-              <td>{formatINR(p.price)}</td>
-              <td>{p.stock}</td>
-              <td className="row">
-                <button className="btn btn-ghost" onClick={() => edit(p)}>Edit</button>
-                <button className="btn btn-danger" onClick={() => remove(p._id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="table-responsive">
+        <table className="table">
+          <thead>
+            <tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th /></tr>
+          </thead>
+          <tbody>
+            {products.map((p) => (
+              <tr key={p._id}>
+                <td>{p.name}</td>
+                <td>{p.category}</td>
+                <td>{formatINR(p.price)}</td>
+                <td>{p.stock}</td>
+                <td className="row">
+                  <button className="btn btn-ghost" onClick={() => edit(p)}>Edit</button>
+                  <button className="btn btn-danger" onClick={() => remove(p._id)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
